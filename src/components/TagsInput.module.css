@@ -1,0 +1,26 @@
+.tagsInput {
+    composes: input from global;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    background-color: white;
+}
+
+.tag {
+    display: inline-flex;
+    padding: 0 0.4em;
+    gap: 0.4em;
+    border-radius: 4px;
+    color: var(--secondary-color-text);
+    background-color: var(--secondary-color);
+
+    span {
+        cursor: pointer;
+    }
+}
+
+.input {
+    border: none;
+    outline: none;
+    padding: 0;
+}

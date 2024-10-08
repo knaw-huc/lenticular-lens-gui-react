@@ -1,0 +1,70 @@
+.menu {
+    display: flex;
+    flex-direction: column;
+
+    > div {
+        display: flex;
+        flex-flow: wrap;
+        row-gap: 0.5em;
+        justify-content: space-evenly;
+        width: 100%;
+    }
+}
+
+.modal {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    margin: 1em;
+
+    .saveButton {
+        align-self: start;
+        margin-bottom: 1em;
+    }
+}
+
+.datasetPart {
+    .datasetLabel {
+        margin-bottom: 1em;
+    }
+
+    .datasetProps {
+        margin-left: 2em;
+    }
+}
+
+.validation {
+    display: flex;
+    flex-direction: column;
+    margin: 0 0.5em;
+
+    button {
+        background: none;
+        border: none;
+        padding: 0.8em;
+        margin: 0;
+        height: auto;
+        border-radius: 0;
+        border-bottom: 1px solid var(--dark-color);
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    .accept {
+        color: var(--green-color);
+    }
+
+    .reject {
+        color: var(--red-color);
+    }
+
+    .uncertain {
+        color: var(--yellow-color);
+    }
+
+    .unchecked {
+        color: var(--primary-color-text);
+    }
+}

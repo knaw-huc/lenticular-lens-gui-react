@@ -1,0 +1,6 @@
+.removeBtn {
+    all: unset;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--red-color);
+}

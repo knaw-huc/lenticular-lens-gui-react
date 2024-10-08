@@ -1,0 +1,85 @@
+.container {
+    margin-top: 5em;
+    margin-bottom: 4em;
+}
+
+.main {
+    display: flex;
+    flex-basis: 100%;
+    flex-direction: column;
+}
+
+.projectLoadOptions {
+    padding: 0 2em;
+}
+
+.newLoadProject {
+    margin: 1em 0 2em 0;
+
+    > p {
+        margin: 0;
+    }
+
+    > input {
+        margin-top: 1em;
+    }
+
+    > button {
+        margin-top: 2em;
+    }
+}
+
+.loadExistingProject {
+    padding: 0 2em;
+}
+
+.existingProjects {
+    max-height: 70vh;
+    overflow-y: auto;
+
+    a {
+        color: var(--primary-color-text);
+    }
+}
+
+.newProjectModal {
+    padding: 1em;
+
+    input, textarea {
+        background-color: #f0f5f9;
+    }
+
+    textarea {
+        height: auto;
+        min-height: 150px;
+    }
+
+    button {
+        align-self: start;
+    }
+}
+
+.title {
+    font-weight: 700;
+}
+
+.description {
+    font-size: 0.9em;
+}
+
+@media (min-width: 800px) {
+    .main {
+        flex-direction: row;
+
+        > * {
+            flex-basis: 50%;
+        }
+    }
+}
+
+@media (min-width: 600px) {
+    .projects > * {
+        flex-direction: row;
+        display: flex;
+    }
+}

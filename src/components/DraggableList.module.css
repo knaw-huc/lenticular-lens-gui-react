@@ -1,0 +1,19 @@
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.item {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.grip {
+    cursor: grab;
+
+    &:active {
+        cursor: grabbing;
+    }
+}

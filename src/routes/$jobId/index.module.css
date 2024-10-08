@@ -1,0 +1,55 @@
+.container {
+    margin-top: 5em;
+    margin-bottom: 4em;
+}
+
+.main {
+    padding: 1em;
+    background-color: var(--light-color);
+    border-radius: 4px;
+
+    textarea {
+        height: 10em;
+    }
+}
+
+.first {
+    display: flex;
+    justify-content: space-between;
+}
+
+.id {
+    span {
+        color: var(--secondary-color);
+    }
+
+    button {
+        all: unset;
+        line-height: 1;
+        color: var(--secondary-color);
+        cursor: pointer;
+    }
+}
+
+.dates {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9em;
+
+    > span {
+        display: flex;
+        justify-content: space-between;
+        gap: 1em;
+
+        span:first-of-type {
+            font-weight: 700;
+        }
+    }
+}
+
+.buttons {
+    display: flex;
+    justify-content: end;
+    gap: 1em;
+    margin-top: 1em;
+}

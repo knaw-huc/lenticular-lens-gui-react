@@ -1,0 +1,85 @@
+:global(.property).property {
+    :global(.property-pill) {
+        text-transform: none;
+        color: var(--primary-color-text);
+        border-color: var(--dark-color);
+    }
+
+    :global(.property-resource), :global(.property-button) {
+        color: var(--secondary-color-text);
+        border-color: var(--secondary-color);
+        background-color: var(--secondary-color);
+    }
+
+    :global(.property-prop), :global(.property-select) {
+        background-color: white;
+    }
+
+    :global(.property-sep) {
+        color: var(--primary-color-text);
+    }
+
+    :global(.property-values) li:not(:first-child):before {
+        color: var(--primary-color-text);
+    }
+
+    :global(.property-button) {
+        display: flex;
+        gap: 0;
+
+        .iconButtonLabel {
+            width: 0;
+            margin: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            transition: width, margin 0.1s;
+        }
+
+        &:hover .iconButtonLabel {
+            width: auto;
+            margin-left: 0.5em;
+        }
+    }
+}
+
+:global(.property-popover) {
+    border-color: var(--dark-color);
+
+    input {
+        border: 1px solid var(--dark-color);
+    }
+}
+
+.option {
+    display: flex;
+    flex-direction: column;
+    font-weight: 700;
+    padding: 0.2em 0.4em;
+
+    .optionStop {
+        color: var(--secondary-color);
+    }
+
+    .optionMain > span:not(.optionStop) {
+        font-style: italic;
+        font-size: 0.85em;
+        color: var(--secondary-color);
+        margin-left: 1em;
+    }
+}
+
+.transformerIcon, .transformerAllIcon {
+    display: inline-flex;
+}
+
+.transformerIcon svg {
+    margin: 0 -0.2em;
+}
+
+.transformerAllIcon svg {
+    margin: 0 -0.05em;
+
+    &:last-child {
+        margin: 0 -0.2em;
+    }
+}

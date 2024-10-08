@@ -1,0 +1,19 @@
+.waiting {
+    color: #dc3545;
+
+    > button {
+        all: unset;
+        color: var(--primary-color-text);
+        cursor: pointer;
+        text-decoration: underline;
+        margin-left: 0.5em;
+    }
+}
+
+.success {
+    color: #28a745;
+}
+
+.running {
+    color: #28a745;
+}

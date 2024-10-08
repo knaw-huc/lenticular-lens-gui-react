@@ -1,0 +1,66 @@
+.group {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+
+    label {
+        font-size: 0.85em;
+        font-weight: 700;
+    }
+}
+
+.root {
+    position: relative;
+    display: flex;
+    align-items: center;
+    user-select: none;
+    touch-action: none;
+    width: 8em;
+}
+
+.track {
+    background-color: var(--dark-color);
+    position: relative;
+    flex-grow: 1;
+    border-radius: 9999px;
+    height: 0.3em;
+}
+
+.range {
+    position: absolute;
+    background-color: var(--primary-color);
+    border-radius: 9999px;
+    height: 100%;
+}
+
+.thumb {
+    display: block;
+    width: 1em;
+    height: 1em;
+    background-color: white;
+    box-shadow: 0 1px 0.5em black;
+    border-radius: 1em;
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--primary-color);
+    }
+}
+
+.value {
+    background-color: var(--primary-color-light);
+    border: 1px solid var(--primary-color);
+    border-radius: 3px;
+    padding: 0.2em 0.5em;
+    line-height: 1;
+    font-size: 0.7em;
+    min-width: 3.1em;
+
+    &.min {
+        text-align: right;
+    }
+
+    &.max {
+        text-align: left;
+    }
+}

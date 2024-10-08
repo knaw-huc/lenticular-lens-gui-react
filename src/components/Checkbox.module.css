@@ -1,0 +1,24 @@
+.checkbox {
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border: 1px solid var(--primary-color-contrast);
+    border-radius: 4px;
+    height: 1.2em;
+    width: 1.2em;
+    padding: 0;
+    margin: 0;
+
+    &:disabled, :disabled & {
+        border: 1px solid var(--dark-color);
+        background-color: var(--light-color);
+    }
+}
+
+.indicator {
+    color: var(--secondary-color);
+
+    :disabled & {
+        color: grey;
+    }
+}

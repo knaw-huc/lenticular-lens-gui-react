@@ -1,0 +1,11 @@
+.filterValue {
+    flex-grow: 1;
+}
+
+.helpText {
+    font-size: 0.7em;
+    text-transform: none;
+    font-weight: normal;
+    font-style: italic;
+    margin-left: 0.2em;
+}

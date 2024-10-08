@@ -1,0 +1,44 @@
+.dataset {
+    display: flex;
+    flex-direction: column;
+    gap: 2em;
+}
+
+.entitySelector {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    row-gap: 0.5em;
+}
+
+.description {
+    font-size: 0.95em;
+}
+
+.extra {
+    font-size: 0.85em;
+    color: var(--secondary-color);
+}
+
+.placeholder {
+    font-style: italic;
+}
+
+@media (min-width: 800px) {
+    .entitySelector {
+        flex-wrap: wrap;
+        flex-direction: row;
+
+        > div {
+            flex-basis: 100%;
+
+            &.datasetColumn {
+                flex-basis: 60%;
+            }
+
+            &.entityColumn {
+                flex-basis: 40%;
+            }
+        }
+    }
+}

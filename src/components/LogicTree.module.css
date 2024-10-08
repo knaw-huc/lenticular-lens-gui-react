@@ -1,0 +1,25 @@
+:global(.logic-box).logicTree {
+    :global(.type-box), :global(.btn) {
+        color: var(--primary-color-text);
+        background-color: var(--primary-color);
+        border: 1px solid var(--primary-color-contrast);
+    }
+
+    :global(.header-menu), :global(.leaf) {
+        background-color: var(--light-color);
+        border: 1px solid var(--dark-color);
+        border-radius: 4px;
+    }
+}
+
+.headerMenu {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    text-wrap: nowrap;
+    gap: 1em;
+}
+
+.noConditions {
+    font-style: italic;
+}

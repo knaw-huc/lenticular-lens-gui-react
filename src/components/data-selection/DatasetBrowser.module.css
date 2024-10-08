@@ -1,0 +1,70 @@
+.datasetBrowser {
+    display: flex;
+    flex-direction: column;
+    max-width: 90vw;
+    max-height: 85vh;
+
+    li {
+        cursor: pointer;
+    }
+}
+
+.endpoint {
+    flex-shrink: 0;
+    padding: 1em 2em;
+    border-radius: 6px 6px 0 0;
+    background-color: var(--light-color);
+}
+
+.dataSelection {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.datasets {
+    padding: 0 2em;
+    overflow-y: scroll;
+    max-height: 100%;
+}
+
+.entities {
+    padding: 0 2em;
+    background-color: var(--light-color);
+    border-left: 5px solid var(--secondary-color);
+    border-radius: 0 0 6px 0;
+    overflow-y: scroll;
+    max-height: 100%;
+}
+
+.name {
+    font-size: 0.9em;
+    font-weight: 300;
+    margin-left: 2em;
+    color: var(--secondary-color);
+}
+
+.title {
+    font-weight: 700;
+}
+
+.description {
+    font-size: 0.9em;
+}
+
+@media (min-width: 800px) {
+    .dataSelection {
+        flex-direction: row;
+    }
+
+    .datasets {
+        width: 60%;
+        flex-grow: 1;
+    }
+
+    .entities {
+        width: 40%;
+        flex-grow: 1;
+    }
+}

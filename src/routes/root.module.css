@@ -1,0 +1,55 @@
+.header {
+    width: 100%;
+    display: flex;
+    background-image: none !important;
+    background-color: var(--primary-color);
+
+    > * {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 1em;
+    }
+
+    > nav {
+        padding: 0;
+        border-left: 1px solid var(--primary-color-contrast);
+        margin-right: 5em;
+
+        > a {
+            color: var(--primary-color-text);
+            text-wrap: nowrap;
+            border-right: 1px solid var(--primary-color-contrast);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 1em;
+
+            &.selected {
+                font-weight: 700;
+                border-bottom: 3px solid var(--secondary-color);
+            }
+        }
+    }
+}
+
+.logo {
+    padding-left: 0;
+
+    img {
+        width: auto;
+        height: 65px;
+    }
+}
+
+.title {
+    font-weight: 700;
+    color: var(--primary-color-text);
+    border-right: 1px solid rgba(0, 0, 0, 0.16);
+}
+
+.jobTitle {
+    flex-grow: 1;
+    justify-content: start;
+    color: var(--primary-color-text);
+}

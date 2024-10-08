@@ -1,0 +1,9 @@
+.sources, .targets {
+    > button {
+        margin-top: 1em;
+    }
+}
+
+.targets {
+    margin-top: 2em;
+}

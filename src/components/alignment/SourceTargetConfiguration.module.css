@@ -1,0 +1,13 @@
+.properties {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.transformers {
+    margin-top: 1em;
+}
+
+.propertyTransformers {
+    margin-left: 2em;
+}

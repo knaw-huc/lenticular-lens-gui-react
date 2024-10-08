@@ -1,0 +1,22 @@
+.icon {
+    display: inline-block;
+    border-radius: 4px;
+    width: 1em;
+    height: 1em;
+    margin-right: 0.25em;
+}
+
+.datasetIcon {
+    composes: icon;
+    background-color: #3793bb;
+}
+
+.alignmentIcon {
+    composes: icon;
+    background-color: #ffac4b;
+}
+
+.lensIcon {
+    composes: icon;
+    background-color: #dc3545;
+}

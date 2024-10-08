@@ -1,0 +1,114 @@
+.results {
+    gap: 1em;
+
+    > li, > li:first-child, > li:last-child {
+        border: 1px solid var(--dark-color);
+        border-radius: 3px;
+        padding: 0.7em;
+
+        &.accepted {
+            background-color: var(--green-color-light);
+        }
+
+        &.rejected {
+            background-color: var(--red-color-light);
+        }
+
+        &.uncertain, &.disputed {
+            background-color: var(--yellow-color-light);
+        }
+    }
+}
+
+.link {
+    display: grid;
+    flex-grow: 1;
+    grid-template-columns: min-content repeat(2, auto) min-content;
+    grid-template-rows: max-content auto;
+    gap: 0.7em;
+    grid-template-areas:
+            "link-options uris uris uris"
+            "link-options source-props target-props validation";
+}
+
+.linkOptions {
+    grid-area: link-options;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8em;
+    line-height: 100%;
+    padding-right: 0.7em;
+    border-right: 1px solid var(--dark-color);
+
+    .linkOptionsCount {
+        font-weight: 700;
+        color: var(--secondary-color);
+    }
+
+    > div {
+        text-align: center;
+    }
+}
+
+.uris {
+    grid-area: uris;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0.7em;
+    border-bottom: 1px solid var(--dark-color);
+}
+
+.sourceProps {
+    grid-area: source-props;
+}
+
+.targetProps {
+    grid-area: target-props;
+}
+
+.sourceProps, .targetProps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+
+    .title {
+        font-weight: 700;
+    }
+}
+
+.validation {
+    grid-area: validation;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 0.5em;
+    padding-left: 0.7em;
+    border-left: 1px solid var(--dark-color);
+
+    .accept {
+        color: white;
+        background-color: var(--green-color);
+        border: none;
+    }
+
+    .reject {
+        color: white;
+        background-color: var(--red-color);
+        border: none;
+    }
+
+    .uncertain {
+        color: var(--primary-color-text);
+        background-color: var(--yellow-color);
+        border: none;
+    }
+
+    .motivation {
+        color: var(--primary-color-text);
+        background-color: white;
+        border: 1px solid var(--primary-color-text);
+    }
+}

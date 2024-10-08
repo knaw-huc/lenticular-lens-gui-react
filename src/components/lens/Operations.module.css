@@ -1,0 +1,14 @@
+.element {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+}
+
+.helpText {
+    min-width: 6em;
+    font-size: 0.9em;
+    text-align: center;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--secondary-color);
+}

@@ -1,0 +1,83 @@
+.cluster {
+    display: grid;
+    flex-grow: 1;
+    grid-template-columns: max-content 1fr;
+    grid-template-rows: repeat(2, auto);
+    gap: 0.7em;
+    grid-template-areas:
+            "header header"
+            "statistics props";
+}
+
+.header {
+    grid-area: header;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.7em;
+    border-bottom: 1px solid var(--dark-color);
+
+    .id {
+        font-weight: 700;
+        color: var(--secondary-color);
+        text-transform: uppercase;
+    }
+
+    .state {
+        display: flex;
+        gap: 1em;
+
+        > div {
+            display: flex;
+            gap: 0.2em;
+            flex-direction: row;
+            justify-content: space-between;
+
+            div:first-of-type {
+                display: inline;
+                font-weight: 700;
+            }
+        }
+
+        .true {
+            color: var(--green-color);
+        }
+
+        .false {
+            color: var(--red-color);
+        }
+    }
+}
+
+.statistics {
+    grid-area: statistics;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    padding-right: 0.7em;
+    border-right: 1px solid var(--dark-color);
+
+    > div {
+        display: flex;
+        flex-direction: column;
+
+        > div {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 1em;
+
+            > div:first-of-type {
+                display: inline;
+                font-weight: 700;
+            }
+        }
+    }
+}
+
+.props {
+    grid-area: props;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}

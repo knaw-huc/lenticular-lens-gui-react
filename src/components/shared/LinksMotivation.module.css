@@ -1,0 +1,17 @@
+.motivation {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    margin: 1em;
+    max-width: 20em;
+
+    textarea {
+        max-height: 10em;
+    }
+}
+
+.buttons {
+    display: flex;
+    gap: 0.5em;
+    justify-content: end;
+}

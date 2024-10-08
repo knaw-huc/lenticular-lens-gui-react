@@ -1,0 +1,11 @@
+.error {
+    margin-top: 2em;
+
+    > h2 {
+        margin-bottom: 0;
+    }
+
+    > pre {
+        white-space: normal;
+    }
+}

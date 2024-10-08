@@ -1,0 +1,18 @@
+.export {
+    width: max-content;
+    margin: 0 auto;
+
+    > label {
+        display: flex;
+        align-items: center;
+        gap: 1em;
+
+        > div:first-of-type {
+            width: 12em;
+        }
+    }
+
+    .exportButton {
+        align-self: start;
+    }
+}
