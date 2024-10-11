@@ -1,4 +1,4 @@
-import {useContext, useEffect} from 'react';
+import {useContext, useEffect, useRef} from 'react';
 import {useQueryClient} from '@tanstack/react-query';
 import {createFileRoute, Outlet} from '@tanstack/react-router';
 import {EntityTypeSelectionsProvider} from 'context/EntityTypeSelectionsContext.tsx';
@@ -18,6 +18,7 @@ import useLinksetSpecs from 'hooks/useLinksetSpecs.ts';
 import useLensSpecs from 'hooks/useLensSpecs.ts';
 import useViews from 'hooks/useViews.ts';
 import QueryStateBoundary from 'components/QuerySateBoudary.tsx';
+import {UnsavedData} from 'utils/interfaces.ts';
 
 function Job() {
     const queryClient = useQueryClient();
@@ -61,19 +62,25 @@ function JobSocket() {
     const {linksetSpecs, updateLinksetSpecs} = useLinksetSpecs();
     const {lensSpecs, updateLensSpecs} = useLensSpecs();
     const {views, updateViews} = useViews();
+    const unsavedData = useRef({entityTypeSelections, linksetSpecs, lensSpecs, views});
+
+    function getUnsavedData() {
+        return unsavedData.current;
+    }
+
+    function updateUnsavedData(unsavedData: UnsavedData) {
+        updateEntityTypeSelections(unsavedData.entityTypeSelections);
+        updateLinksetSpecs(unsavedData.linksetSpecs);
+        updateLensSpecs(unsavedData.lensSpecs);
+        updateViews(unsavedData.views);
+    }
 
     useEffect(() => {
-        return setUpJobSocket(queryClient, jobId, () => ({
-            entityTypeSelections,
-            linksetSpecs,
-            lensSpecs,
-            views
-        }), (unsavedData) => {
-            updateEntityTypeSelections(unsavedData.entityTypeSelections);
-            updateLinksetSpecs(unsavedData.linksetSpecs);
-            updateLensSpecs(unsavedData.lensSpecs);
-            updateViews(unsavedData.views);
-        });
+        unsavedData.current = {entityTypeSelections, linksetSpecs, lensSpecs, views};
+    }, [entityTypeSelections, linksetSpecs, lensSpecs, views]);
+
+    useEffect(() => {
+        return setUpJobSocket(queryClient, jobId, getUnsavedData, updateUnsavedData);
     }, [queryClient, jobId]);
 
     return (

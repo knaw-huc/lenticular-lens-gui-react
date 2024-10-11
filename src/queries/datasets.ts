@@ -20,7 +20,7 @@ export async function prefetchDatasetsForJob(queryClient: QueryClient, job: Job)
 }
 
 async function loadDatasets(graphqlEndpoint: string): Promise<{ [id: string]: Dataset }> {
-    const response = await fetch(`${api()}/datasets?endpoint=${graphqlEndpoint}`);
+    const response = await fetch(`${api}/datasets?endpoint=${graphqlEndpoint}`);
     if (!response.ok)
         throw new Error(`Unable to fetch datasets from GraphQL endpoint ${graphqlEndpoint}!`);
 

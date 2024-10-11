@@ -9,7 +9,7 @@ import {prefetchDownloads} from 'queries/downloads.ts';
 import {setUpSocket} from 'queries/socket.ts';
 import QueryStateBoundary from 'components/QuerySateBoudary.tsx';
 import {BasicJobMetadata, RouterContext} from 'utils/interfaces.ts';
-import {api} from 'utils/config.ts';
+import {api, isProd} from 'utils/config.ts';
 import logo from 'assets/logo-ga.png';
 import classes from './root.module.css';
 
@@ -33,8 +33,8 @@ function App() {
                     <Outlet/>
                 </QueryStateBoundary>
 
-                <ReactQueryDevtools buttonPosition="bottom-left"/>
-                <TanStackRouterDevtools position="bottom-right"/>
+                {!isProd && <ReactQueryDevtools buttonPosition="bottom-left"/>}
+                {!isProd && <TanStackRouterDevtools position="bottom-right"/>}
             </main>
         </>
     );
@@ -85,9 +85,9 @@ function Header({logo, lastActiveJob}: { logo: string, lastActiveJob: BasicJobMe
 
 export const Route = createRootRouteWithContext<RouterContext>()({
     component: App,
-    beforeLoad: async ({location, context}) => context.authenticate((userInfo, isAuthEnabled) => {
+    beforeLoad: async ({context}) => context.authenticate((userInfo, isAuthEnabled) => {
         if (isAuthEnabled && !userInfo)
-            window.location.replace(`${api()}/login?redirect-uri=` + encodeURIComponent(location.href));
+            window.location.replace(`${api}/login?redirect-uri=` + encodeURIComponent(window.location.href));
     }),
     loader: ({context: {queryClient}}) => {
         prefetchMethods(queryClient);

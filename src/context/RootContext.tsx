@@ -18,7 +18,7 @@ export function RootContextProvider({children}: { children: ReactNode }) {
             ? JSON.parse(sessionStorage.getItem('ll_userInfo')!) : null;
 
         if (isAuthEnabled && !userInfo) {
-            const response = await fetch(`${api()}/user_info`);
+            const response = await fetch(`${api}/user_info`);
             const updatedUserInfo: UserInfo | null = response.ok ? await response.json() : null;
             const updatedIsAuthEnabled = response.ok || response.status !== 404;
 

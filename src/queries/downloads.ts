@@ -22,11 +22,11 @@ export function useDownloads() {
 
 export async function startDownload(graphqlEndpoint: string, datasetId: string, collectionId: string) {
     const params = [`endpoint=${graphqlEndpoint}`, `dataset_id=${datasetId}`, `collection_id=${collectionId}`];
-    return fetch(`${api()}/download?${params.join('&')}`);
+    return fetch(`${api}/download?${params.join('&')}`);
 }
 
 async function loadDownloads(): Promise<Downloads> {
-    const response = await fetch(`${api()}/downloads`);
+    const response = await fetch(`${api}/downloads`);
     if (!response.ok)
         throw new Error('Unable to fetch all downloads!');
 

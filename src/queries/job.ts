@@ -3,8 +3,9 @@ import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
 import useLinksetSpecs from 'hooks/useLinksetSpecs.ts';
 import useLensSpecs from 'hooks/useLensSpecs.ts';
 import useViews from 'hooks/useViews.ts';
-import {Job, JobUpdateData} from 'utils/interfaces.ts';
 import {api} from 'utils/config.ts';
+import {mergeSpecs} from 'utils/specifications.ts';
+import {Job, JobUpdate, JobUpdateData, UnsavedData} from 'utils/interfaces.ts';
 
 // TODO: socket informs about updates, so only stale after job change or new window?
 // TODO: on fetch always compare against local changes?
@@ -52,7 +53,13 @@ export function useUpdateJob(id: string) {
             lens_specs: lensSpecs,
             views: views
         }),
-        onSettled: () => queryClient.invalidateQueries(getJobQueryOptions(id))
+        onMutate: () => queryClient.setQueryData<Job>(['job', id], job => job ? {
+            ...job,
+            entity_type_selections: entityTypeSelections,
+            linkset_specs: linksetSpecs,
+            lens_specs: lensSpecs,
+            views: views
+        } : undefined)
     });
 }
 
@@ -64,7 +71,12 @@ export function useUpdateJobMetadata(id: string) {
             job_description?: string;
             job_link?: string | null;
         }) => updateJob({job_id: id, ...jobMetadata}),
-        onSettled: () => queryClient.invalidateQueries(getJobQueryOptions(id))
+        onSuccess: (_data, variables) => {
+            queryClient.setQueryData<Job>(['job', id], job => job ? {
+                ...job,
+                ...variables
+            } : undefined)
+        }
     });
 }
 
@@ -83,8 +95,50 @@ export function useDeleteJob(id: string) {
     });
 }
 
+export async function onJobUpdate(queryClient: QueryClient, data: JobUpdate, unsavedData: UnsavedData,
+                                  updateUnsavedData: (unsavedData: UnsavedData) => void): Promise<void> {
+    const prevJob = queryClient.getQueryData<Job>(['job', data.job_id]);
+    if (!prevJob || prevJob.updated_at >= data.updated_at)
+        return;
+
+    await queryClient.cancelQueries({queryKey: ['job', data.job_id]});
+
+    const hasUnsavedEntityTypeSelections =
+        JSON.stringify(unsavedData.entityTypeSelections) !== JSON.stringify(prevJob.entity_type_selections);
+    const hasUnsavedLinksetSpecs = JSON.stringify(unsavedData.linksetSpecs) !== JSON.stringify(prevJob.linkset_specs);
+    const hasUnsavedLensSpecs = JSON.stringify(unsavedData.lensSpecs) !== JSON.stringify(prevJob.lens_specs);
+    const hasUnsavedViews = JSON.stringify(unsavedData.views) !== JSON.stringify(prevJob.views);
+
+    await queryClient.refetchQueries({queryKey: ['job', data.job_id]});
+    const newJob = queryClient.getQueryData<Job>(['job', data.job_id]);
+    if (newJob) {
+        const entityTypeSelections = mergeSpecs(
+            data.is_entity_type_selections_update, hasUnsavedEntityTypeSelections, prevJob.entity_type_selections,
+            newJob.entity_type_selections, unsavedData.entityTypeSelections);
+
+        const linksetSpecs = mergeSpecs(
+            data.is_linkset_specs_update, hasUnsavedLinksetSpecs, prevJob.linkset_specs,
+            newJob.linkset_specs, unsavedData.linksetSpecs);
+
+        const lensSpecs = mergeSpecs(
+            data.is_lens_specs_update, hasUnsavedLensSpecs, prevJob.lens_specs,
+            newJob.lens_specs, unsavedData.lensSpecs);
+
+        const views = mergeSpecs(
+            data.is_views_update, hasUnsavedViews, prevJob.views,
+            newJob.views, unsavedData.views);
+
+        updateUnsavedData({
+            entityTypeSelections,
+            views,
+            linksetSpecs,
+            lensSpecs
+        });
+    }
+}
+
 async function loadJob(id: string): Promise<Job> {
-    const response = await fetch(`${api()}/job/${id}`);
+    const response = await fetch(`${api}/job/${id}`);
     if (!response.ok)
         throw new Error(`Unable to fetch job with id ${id}!`);
 
@@ -101,7 +155,7 @@ async function createJob(title: string, description: string, link?: string): Pro
     if (link)
         formData.append('job_link', link);
 
-    const response = await fetch(`${api()}/job/create`, {
+    const response = await fetch(`${api}/job/create`, {
         method: 'POST',
         body: formData
     });
@@ -113,18 +167,18 @@ async function createJob(title: string, description: string, link?: string): Pro
 }
 
 async function updateJob(job: JobUpdateData): Promise<void> {
-    const response = await fetch(`${api()}/job/update`, {
+    const response = await fetch(`${api}/job/update`, {
         headers: {'Content-Type': 'application/json'},
         method: 'POST',
         body: JSON.stringify(job)
     });
 
-    if (!response.ok)
+    if (!response.ok && response.status !== 400)
         throw new Error('Unable to save job!');
 }
 
 async function deleteJob(id: string): Promise<void> {
-    const response = await fetch(`${api()}/job/${id}`, {
+    const response = await fetch(`${api}/job/${id}`, {
         method: 'DELETE'
     });
 

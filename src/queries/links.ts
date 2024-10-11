@@ -161,7 +161,7 @@ export function useMotivateSelection(jobId: string, type: 'linkset' | 'lens', id
 }
 
 async function loadLinks(jobId: string, type: 'linkset' | 'lens', id: number, page: number, props: LinksProps): Promise<Link[]> {
-    const response = await fetch(`${api()}/job/${jobId}/links/${type}/${id}`, {
+    const response = await fetch(`${api}/job/${jobId}/links/${type}/${id}`, {
         method: 'POST',
         body: createLinksFormData(props, true, 'multiple', page)
     });
@@ -178,7 +178,7 @@ async function loadLinks(jobId: string, type: 'linkset' | 'lens', id: number, pa
 
 async function loadLinksTotals(jobId: string, type: 'linkset' | 'lens', id: number,
                                props: LinksTotalsProps, applyFilters: boolean = false): Promise<LinksTotals> {
-    const response = await fetch(`${api()}/job/${jobId}/links_totals/${type}/${id}`, {
+    const response = await fetch(`${api}/job/${jobId}/links_totals/${type}/${id}`, {
         method: 'POST',
         body: createLinksTotalsFormData(props, applyFilters)
     });
@@ -197,7 +197,7 @@ async function validateLink(jobId: string, type: 'linkset' | 'lens', id: number,
     formData.append('source', source);
     formData.append('target', target);
 
-    const response = await fetch(`${api()}/job/${jobId}/validate/${type}/${id}`, {
+    const response = await fetch(`${api}/job/${jobId}/validate/${type}/${id}`, {
         method: 'POST',
         body: formData
     });
@@ -211,7 +211,7 @@ async function validateSelection(jobId: string, type: 'linkset' | 'lens', id: nu
     const body = createLinksFormData(props, true);
     body.append('validation', validation);
 
-    const response = await fetch(`${api()}/job/${jobId}/validate/${type}/${id}`, {method: 'POST', body});
+    const response = await fetch(`${api}/job/${jobId}/validate/${type}/${id}`, {method: 'POST', body});
     if (!response.ok)
         throw new Error('Unable to validate link selection!');
 }
@@ -224,7 +224,7 @@ async function motivateLink(jobId: string, type: 'linkset' | 'lens', id: number,
     formData.append('source', source);
     formData.append('target', target);
 
-    const response = await fetch(`${api()}/job/${jobId}/motivate/${type}/${id}`, {
+    const response = await fetch(`${api}/job/${jobId}/motivate/${type}/${id}`, {
         method: 'POST',
         body: formData
     });
@@ -238,7 +238,7 @@ async function motivateSelection(jobId: string, type: 'linkset' | 'lens', id: nu
     const body = createLinksFormData(props, true);
     body.append('motivation', motivation);
 
-    const response = await fetch(`${api()}/job/${jobId}/motivate/${type}/${id}`, {method: 'POST', body});
+    const response = await fetch(`${api}/job/${jobId}/motivate/${type}/${id}`, {method: 'POST', body});
     if (!response.ok)
         throw new Error('Unable to motivate link selection!');
 }

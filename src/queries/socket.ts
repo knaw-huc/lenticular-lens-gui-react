@@ -1,19 +1,18 @@
 import {io} from 'socket.io-client';
 import {QueryClient} from '@tanstack/react-query';
-import {resetMethods} from './methods.ts';
-import {resetDownloads, updateDownload} from './downloads.ts';
+import {onJobUpdate} from 'queries/job.ts';
+import {resetMethods} from 'queries/methods.ts';
+import {resetDownloads, updateDownload} from 'queries/downloads.ts';
 import {prefetchLinksets, resetLinksets} from 'queries/linksets.ts';
 import {prefetchLenses, resetLenses} from 'queries/lenses.ts';
 import {prefetchClusterings, resetClusterings} from 'queries/clusterings.ts';
-import {mergeSpecs} from 'utils/specifications.ts';
 import {
-    Job, Linkset, Lens, Clustering, UnsavedData,
-    AlignmentDelete, AlignmentUpdate, ClusteringDelete, ClusteringUpdate, JobUpdate
+    Linkset, Lens, Clustering, UnsavedData, AlignmentDelete, AlignmentUpdate, ClusteringDelete, ClusteringUpdate
 } from 'utils/interfaces.ts';
 import {api} from 'utils/config.ts';
 
 export function setUpSocket(queryClient: QueryClient) {
-    const socket = io(`${api()}/`);
+    const socket = io(`${api}/`);
     socket.on('timbuctoo_update', e => updateDownload(queryClient, JSON.parse(e)));
     socket.on('timbuctoo_delete', _ => resetDownloads(queryClient));
     socket.on('extension_update', _ => resetMethods(queryClient));
@@ -29,9 +28,8 @@ export function setUpSocket(queryClient: QueryClient) {
 }
 
 export function setUpJobSocket(queryClient: QueryClient, jobId: string,
-                               getUnsavedData: () => UnsavedData,
-                               updateUnsavedData: (unsavedData: UnsavedData) => void) {
-    const socket = io(`${api()}/${jobId}`);
+                               getUnsavedData: () => UnsavedData, updateUnsavedData: (unsavedData: UnsavedData) => void) {
+    const socket = io(`${api}/${jobId}`);
     socket.on('job_update', e => onJobUpdate(queryClient, JSON.parse(e), getUnsavedData(), updateUnsavedData));
     socket.on('alignment_update', e => onAlignmentUpdate(queryClient, JSON.parse(e)));
     socket.on('alignment_delete', e => onAlignmentDelete(queryClient, JSON.parse(e)));
@@ -48,48 +46,6 @@ export function setUpJobSocket(queryClient: QueryClient, jobId: string,
         socket.io.off('reconnect');
         socket.disconnect();
     };
-}
-
-async function onJobUpdate(queryClient: QueryClient, data: JobUpdate, unsavedData: UnsavedData,
-                           updateUnsavedData: (unsavedData: UnsavedData) => void): Promise<void> {
-    const prevJob = queryClient.getQueryData<Job>(['job', data.job_id]);
-    if (!prevJob || prevJob.updated_at >= data.updated_at)
-        return;
-
-    await queryClient.cancelQueries({queryKey: ['job', data.job_id]});
-
-    const hasUnsavedEntityTypeSelections =
-        JSON.stringify(unsavedData.entityTypeSelections) !== JSON.stringify(prevJob.entity_type_selections);
-    const hasUnsavedLinksetSpecs = JSON.stringify(unsavedData.linksetSpecs) !== JSON.stringify(prevJob.linkset_specs);
-    const hasUnsavedLensSpecs = JSON.stringify(unsavedData.lensSpecs) !== JSON.stringify(prevJob.lens_specs);
-    const hasUnsavedViews = JSON.stringify(unsavedData.views) !== JSON.stringify(prevJob.views);
-
-    await queryClient.refetchQueries({queryKey: ['job', data.job_id]});
-    const newJob = queryClient.getQueryData<Job>(['job', data.job_id]);
-    if (newJob) {
-        const entityTypeSelections = mergeSpecs(
-            data.is_entity_type_selections_update, hasUnsavedEntityTypeSelections, prevJob.entity_type_selections,
-            newJob.entity_type_selections, unsavedData.entityTypeSelections);
-
-        const linksetSpecs = mergeSpecs(
-            data.is_linkset_specs_update, hasUnsavedLinksetSpecs, prevJob.linkset_specs,
-            newJob.linkset_specs, unsavedData.linksetSpecs);
-
-        const lensSpecs = mergeSpecs(
-            data.is_lens_specs_update, hasUnsavedLensSpecs, prevJob.lens_specs,
-            newJob.lens_specs, unsavedData.lensSpecs);
-
-        const views = mergeSpecs(
-            data.is_views_update, hasUnsavedViews, prevJob.views,
-            newJob.views, unsavedData.views);
-
-        updateUnsavedData({
-            entityTypeSelections,
-            views,
-            linksetSpecs,
-            lensSpecs
-        });
-    }
 }
 
 async function onAlignmentUpdate(queryClient: QueryClient, data: AlignmentUpdate) {

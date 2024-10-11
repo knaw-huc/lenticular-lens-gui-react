@@ -36,7 +36,7 @@ async function loadSamples(jobId: string, etsId: number, invert: boolean, page: 
         offset: (pageSize * page).toString()
     });
 
-    const response = await fetch(`${api()}/job/${jobId}/entity_type_selection/${etsId}?${params.toString()}`);
+    const response = await fetch(`${api}/job/${jobId}/entity_type_selection/${etsId}?${params.toString()}`);
     if (!response.ok)
         throw new Error('Unable to fetch samples!');
 
@@ -48,7 +48,7 @@ async function loadSamples(jobId: string, etsId: number, invert: boolean, page: 
 }
 
 async function loadSampleTotal(jobId: string, etsId: number): Promise<number> {
-    const response = await fetch(`${api()}/job/${jobId}/entity_type_selection_total/${etsId}`);
+    const response = await fetch(`${api}/job/${jobId}/entity_type_selection_total/${etsId}`);
     if (!response.ok)
         throw new Error('Unable to fetch sample total!');
 

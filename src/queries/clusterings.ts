@@ -21,7 +21,7 @@ export async function prefetchClusterings(queryClient: QueryClient, id: string) 
 }
 
 export async function runClustering(jobId: string, type: 'linkset' | 'lens', id: number): Promise<boolean> {
-    const result = await fetch(`${api()}/job/${jobId}/run_clustering/${type}/${id}`, {
+    const result = await fetch(`${api}/job/${jobId}/run_clustering/${type}/${id}`, {
         method: 'POST'
     });
 
@@ -29,7 +29,7 @@ export async function runClustering(jobId: string, type: 'linkset' | 'lens', id:
 }
 
 async function loadClusterings(jobId: string): Promise<Clustering[]> {
-    const response = await fetch(`${api()}/job/${jobId}/clusterings`);
+    const response = await fetch(`${api}/job/${jobId}/clusterings`);
     if (!response.ok)
         throw new Error(`Unable to fetch clusterings for job with id ${jobId}!`);
 

@@ -29,7 +29,7 @@ export async function runLinkset(jobId: string, id: number, restart: boolean): P
     const body = new FormData();
     body.append('restart', restart.toString());
 
-    const result = await fetch(`${api()}/job/${jobId}/run/linkset/${id}`, {
+    const result = await fetch(`${api}/job/${jobId}/run/linkset/${id}`, {
         method: 'POST',
         body
     });
@@ -44,7 +44,7 @@ export async function runLinkset(jobId: string, id: number, restart: boolean): P
 }
 
 async function loadLinksets(jobId: string): Promise<Linkset[]> {
-    const response = await fetch(`${api()}/job/${jobId}/linksets`);
+    const response = await fetch(`${api}/job/${jobId}/linksets`);
     if (!response.ok)
         throw new Error(`Unable to fetch linksets for job with id ${jobId}!`);
 

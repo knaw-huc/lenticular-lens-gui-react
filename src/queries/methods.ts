@@ -21,7 +21,7 @@ export function resetMethods(queryClient: QueryClient) {
 }
 
 async function loadMethods(): Promise<Methods> {
-    const response = await fetch(`${api()}/methods`);
+    const response = await fetch(`${api}/methods`);
     if (!response.ok)
         throw new Error('Unable to fetch all available methods!');
 

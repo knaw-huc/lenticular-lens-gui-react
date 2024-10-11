@@ -130,7 +130,7 @@ export default function Export({jobId, type, id}: { jobId: string, type: 'linkse
         if (restrictions.uncertain) params.push('valid=uncertain');
         if (restrictions.unchecked) params.push('valid=unchecked');
 
-        return `${api()}/job/${jobId}/csv/${type}/${id}?${params.join('&')}`;
+        return `${api}/job/${jobId}/csv/${type}/${id}?${params.join('&')}`;
     }
 
     function getRdfExportLink() {
@@ -152,7 +152,7 @@ export default function Export({jobId, type, id}: { jobId: string, type: 'linkse
         params.push(`link_pred_namespace=${encodeURIComponent(linkPredicate.uri)}`);
         params.push(`link_pred_shortname=${encodeURIComponent(linkPredicate.prefix + ':' + linkPredicate.predicate)}`);
 
-        return `${api()}/job/${jobId}/rdf/${type}/${id}?${params.join('&')}`;
+        return `${api}/job/${jobId}/rdf/${type}/${id}?${params.join('&')}`;
     }
 
     return (

@@ -56,12 +56,12 @@ export function useResetClusters(jobId: string, type: 'linkset' | 'lens', id: nu
 }
 
 async function loadClusters(jobId: string, type: 'linkset' | 'lens', id: number, page: number, props: ClustersProps): Promise<Cluster[]> {
-    const fetchWithProps = fetch(`${api()}/job/${jobId}/clusters/${type}/${id}`, {
+    const fetchWithProps = fetch(`${api}/job/${jobId}/clusters/${type}/${id}`, {
         method: 'POST',
         body: createClustersFormData(props, false, 'multiple', page)
     });
 
-    const fetchWithFiltering = fetch(`${api()}/job/${jobId}/clusters/${type}/${id}`, {
+    const fetchWithFiltering = fetch(`${api}/job/${jobId}/clusters/${type}/${id}`, {
         method: 'POST',
         body: createClustersFormData(props, true, 'none', page)
     });
@@ -88,7 +88,7 @@ async function loadClusters(jobId: string, type: 'linkset' | 'lens', id: number,
 
 async function loadClustersTotals(jobId: string, type: 'linkset' | 'lens', id: number,
                                   props: ClustersTotalsProps, applyFilters: boolean = false): Promise<ClustersTotals> {
-    const response = await fetch(`${api()}/job/${jobId}/clusters_totals/${type}/${id}`, {
+    const response = await fetch(`${api}/job/${jobId}/clusters_totals/${type}/${id}`, {
         method: 'POST',
         body: createClustersTotalsFormData(props, applyFilters)
     });
@@ -100,7 +100,7 @@ async function loadClustersTotals(jobId: string, type: 'linkset' | 'lens', id: n
 }
 
 async function loadClusterGraph(jobId: string, type: 'linkset' | 'lens', id: number, graphId: number): Promise<ClusterGraph> {
-    const response = await fetch(`${api()}/job/${jobId}/cluster/${type}/${id}/${graphId}/graph`);
+    const response = await fetch(`${api}/job/${jobId}/cluster/${type}/${id}/${graphId}/graph`);
     if (!response.ok)
         throw new Error('Unable to fetch cluster graph!');
 

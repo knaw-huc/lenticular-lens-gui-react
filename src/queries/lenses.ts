@@ -29,7 +29,7 @@ export async function runLens(jobId: string, id: number, restart: boolean): Prom
     const body = new FormData();
     body.append('restart', restart.toString());
 
-    const result = await fetch(`${api()}/job/${jobId}/run/lens/${id}`, {
+    const result = await fetch(`${api}/job/${jobId}/run/lens/${id}`, {
         method: 'POST',
         body
     });
@@ -44,7 +44,7 @@ export async function runLens(jobId: string, id: number, restart: boolean): Prom
 }
 
 async function loadLenses(jobId: string): Promise<Lens[]> {
-    const response = await fetch(`${api()}/job/${jobId}/lenses`);
+    const response = await fetch(`${api}/job/${jobId}/lenses`);
     if (!response.ok)
         throw new Error(`Unable to fetch lenses for job with id ${jobId}!`);
 
