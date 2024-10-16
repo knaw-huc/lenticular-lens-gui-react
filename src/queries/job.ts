@@ -145,6 +145,10 @@ async function loadJob(id: string): Promise<Job> {
     const job = await response.json();
     job.created_at = job.created_at ? new Date(job.created_at) : null;
     job.updated_at = job.updated_at ? new Date(job.updated_at) : null;
+    job.entity_type_selections = job.entity_type_selections !== null ? job.entity_type_selections : [];
+    job.linkset_specs = job.linkset_specs !== null ? job.linkset_specs : [];
+    job.lens_specs = job.lens_specs !== null ? job.lens_specs : [];
+    job.views = job.views !== null ? job.views : [];
     return job;
 }
 
