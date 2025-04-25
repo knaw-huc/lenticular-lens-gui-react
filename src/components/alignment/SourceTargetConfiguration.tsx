@@ -71,7 +71,7 @@ function PropertiesConfiguration({properties, canUpdate, onUpdate, addListTransf
             {props.map(([ets, size, propertyCondition, idx]) =>
                 <div key={`${ets}_${propertyCondition.property.join('_')}`} className={classes.property}>
                     <Property property={propertyCondition.property}
-                              datasetRef={entityTypeSelections.find(entity => entity.id === Number(ets))!.dataset}
+                              datasetRef={entityTypeSelections.find(entity => entity.id === Number(ets))!.dataset!}
                               showLabel
                               readOnly={!canUpdate}
                               onAdd={() => changeProperties(parseInt(ets), idx, true)}

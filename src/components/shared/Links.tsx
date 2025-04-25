@@ -130,11 +130,7 @@ function LinkResultItem({link, onValidate, onMotivate}: {
                                   allowCollapse
                                   property={linkValues.property}
                                   values={linkValues.values}
-                                  datasetRef={{
-                                      timbuctoo_graphql: linkValues.graphql_endpoint,
-                                      dataset_id: linkValues.dataset_id,
-                                      collection_id: linkValues.collection_id
-                                  }}/>
+                                  datasetRef={linkValues.dataset}/>
                     )}
                 </LabelGroup>}
 
@@ -147,11 +143,7 @@ function LinkResultItem({link, onValidate, onMotivate}: {
                                   allowCollapse
                                   property={linkValues.property}
                                   values={linkValues.values}
-                                  datasetRef={{
-                                      timbuctoo_graphql: linkValues.graphql_endpoint,
-                                      dataset_id: linkValues.dataset_id,
-                                      collection_id: linkValues.collection_id
-                                  }}/>
+                                  datasetRef={linkValues.dataset}/>
                     )}
                 </LabelGroup>}
 

@@ -5,7 +5,7 @@ import {useQueryClient} from '@tanstack/react-query';
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
 import {RootContext} from 'context/RootContext.tsx';
 import {prefetchMethods} from 'queries/methods.ts';
-import {prefetchDownloads} from 'queries/downloads.ts';
+import {prefetchDownloadsTimbuctoo} from 'queries/downloads_timbuctoo.ts';
 import {setUpSocket} from 'queries/socket.ts';
 import QueryStateBoundary from 'components/QuerySateBoudary.tsx';
 import {BasicJobMetadata, RouterContext} from 'utils/interfaces.ts';
@@ -91,6 +91,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     }),
     loader: ({context: {queryClient}}) => {
         prefetchMethods(queryClient);
-        prefetchDownloads(queryClient);
+        prefetchDownloadsTimbuctoo(queryClient);
     }
 });

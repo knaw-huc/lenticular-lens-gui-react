@@ -11,7 +11,7 @@ import {prefetchJob, useJob} from 'queries/job.ts';
 import {prefetchLinksets} from 'queries/linksets.ts';
 import {prefetchLenses} from 'queries/lenses.ts';
 import {prefetchClusterings} from 'queries/clusterings.ts';
-import {prefetchDatasetsForJob} from 'queries/datasets.ts';
+import {prefetchDatasetsTimbuctooForJob} from 'queries/datasets_timbuctoo.ts';
 import {setUpJobSocket} from 'queries/socket.ts';
 import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
 import useLinksetSpecs from 'hooks/useLinksetSpecs.ts';
@@ -37,7 +37,7 @@ function Job() {
     }, [queryClient, jobId]);
 
     useEffect(() => {
-        prefetchDatasetsForJob(queryClient, job);
+        prefetchDatasetsTimbuctooForJob(queryClient, job);
     }, [queryClient, job]);
 
     return (

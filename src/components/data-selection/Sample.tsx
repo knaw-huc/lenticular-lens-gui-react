@@ -6,11 +6,11 @@ import Property from 'components/Property.tsx';
 import Properties from 'components/Properties.tsx';
 import {ResultItem, Results} from 'components/Results.tsx';
 import {useUpdateJob} from 'queries/job.ts';
-import {useDatasets} from 'queries/datasets.ts';
 import {useResetSamples, useSamples, useSampleTotal} from 'queries/sample.ts';
 import useJob from 'hooks/useJob.ts';
 import useInfiniteLoading from 'hooks/useInfiniteLoading.ts';
 import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
+import useDataset from 'hooks/useDataset.ts';
 import {Spinner, StickyMenu, ButtonGroup, LabelGroup} from 'utils/components.tsx';
 import {EntityTypeSelection, Sample as SampleData} from 'utils/interfaces.ts';
 import classes from './Sample.module.css';
@@ -38,7 +38,7 @@ function Menu({jobId, ets, invert, setInvert}: {
     const {hasChanges} = useJob(jobId);
     const mutation = useUpdateJob(jobId);
     const {update} = useEntityTypeSelections();
-    const {data} = useDatasets(ets.dataset.timbuctoo_graphql);
+    const {entityType} = useDataset(ets.dataset!)!;
     const {resetSamples} = useResetSamples(jobId, ets.id, invert);
     const [showPropConfig, setShowPropConfig] = useState(false);
 
@@ -58,7 +58,7 @@ function Menu({jobId, ets, invert, setInvert}: {
 
                     {' / '}
 
-                    {data[ets.dataset.dataset_id].collections[ets.dataset.collection_id].total.toLocaleString('en')}
+                    {entityType.total.toLocaleString('en')}
                 </LabelGroup>
 
                 <ButtonGroup>
@@ -80,7 +80,7 @@ function Menu({jobId, ets, invert, setInvert}: {
             </div>
 
             {showPropConfig &&
-                <Properties properties={ets.properties} dataset={ets.dataset}
+                <Properties properties={ets.properties} datasetRef={ets.dataset!}
                             onChange={newProperties => update(ets.id, ets => ets.properties = newProperties)}/>}
         </StickyMenu>
     );
@@ -134,11 +134,7 @@ function SampleResultItem({sample}: { sample: SampleData }) {
                               allowCollapse
                               property={sampleProperty.property}
                               values={sampleProperty.values}
-                              datasetRef={{
-                                  timbuctoo_graphql: sampleProperty.graphql_endpoint,
-                                  dataset_id: sampleProperty.dataset_id,
-                                  collection_id: sampleProperty.collection_id
-                              }}/>
+                              datasetRef={sampleProperty.dataset}/>
                 )}
             </div>}
         </ResultItem>

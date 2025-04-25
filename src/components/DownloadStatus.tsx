@@ -1,45 +1,30 @@
-import {startDownload, useDownloads} from 'queries/downloads.ts';
-import {Download} from 'utils/interfaces.ts';
+import useDataset from 'hooks/useDataset.ts';
+import {DatasetRef} from 'utils/interfaces.ts';
 import classes from './DownloadStatus.module.css';
 
-export default function DownloadStatus(
-    {
-        graphqlEndpoint,
-        datasetId,
-        collectionId,
-        className,
-        showDownloadButton = true
-    }: {
-        graphqlEndpoint: string,
-        datasetId: string,
-        collectionId: string,
-        className?: string
-        showDownloadButton?: boolean
-    }) {
-    const findDownload = (download: Download) =>
-        download.graphql_endpoint === graphqlEndpoint &&
-        download.dataset_id === datasetId &&
-        download.collection_id === collectionId;
-
-    const {data} = useDownloads();
-    const downloaded = data.downloaded.find(findDownload);
-    const downloading = data.downloading.find(findDownload);
+export default function DownloadStatus({datasetRef, className, showDownloadButton = true}: {
+    datasetRef: DatasetRef,
+    className?: string,
+    showDownloadButton?: boolean
+}) {
+    const {entityType, getDownloadInfo, startDownload} = useDataset(datasetRef)!;
+    const downloadStatus = getDownloadInfo(entityType.id);
 
     return (
         <div className={className}>
-            {!downloaded && !downloading && <span className={classes.waiting}>
+            {downloadStatus === null && <span className={classes.waiting}>
                 Not yet downloaded
-                {showDownloadButton && <button onClick={_ => startDownload(graphqlEndpoint, datasetId, collectionId)}>
+                {showDownloadButton && <button onClick={_ => startDownload(entityType.id)}>
                     Start download
                 </button>}
             </span>}
 
-            {downloaded && <span className={classes.success}>
+            {downloadStatus && downloadStatus.total === downloadStatus.rows_count && <span className={classes.success}>
                 Downloaded
             </span>}
 
-            {downloading && <span className={classes.running}>
-                Downloading {downloading.rows_count.toLocaleString('en')} / {downloading.total.toLocaleString('en')}
+            {downloadStatus && downloadStatus.total !== downloadStatus.rows_count && <span className={classes.running}>
+                Downloading {downloadStatus.rows_count.toLocaleString('en')} / {downloadStatus.total.toLocaleString('en')}
             </span>}
         </div>
     );

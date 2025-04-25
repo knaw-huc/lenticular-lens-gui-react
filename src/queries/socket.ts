@@ -2,7 +2,7 @@ import {io} from 'socket.io-client';
 import {QueryClient} from '@tanstack/react-query';
 import {onJobUpdate} from 'queries/job.ts';
 import {resetMethods} from 'queries/methods.ts';
-import {resetDownloads, updateDownload} from 'queries/downloads.ts';
+import {resetDownloadsTimbuctoo, updateDownloadTimbuctoo} from 'queries/downloads_timbuctoo.ts';
 import {prefetchLinksets, resetLinksets} from 'queries/linksets.ts';
 import {prefetchLenses, resetLenses} from 'queries/lenses.ts';
 import {prefetchClusterings, resetClusterings} from 'queries/clusterings.ts';
@@ -13,10 +13,10 @@ import {api} from 'utils/config.ts';
 
 export function setUpSocket(queryClient: QueryClient) {
     const socket = io(`${api}/`);
-    socket.on('timbuctoo_update', e => updateDownload(queryClient, JSON.parse(e)));
-    socket.on('timbuctoo_delete', _ => resetDownloads(queryClient));
+    socket.on('timbuctoo_update', e => updateDownloadTimbuctoo(queryClient, JSON.parse(e)));
+    socket.on('timbuctoo_delete', _ => resetDownloadsTimbuctoo(queryClient));
     socket.on('extension_update', _ => resetMethods(queryClient));
-    socket.io.on('reconnect', _ => resetDownloads(queryClient));
+    socket.io.on('reconnect', _ => resetDownloadsTimbuctoo(queryClient));
 
     return () => {
         socket.off('timbuctoo_update');

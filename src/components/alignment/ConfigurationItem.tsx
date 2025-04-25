@@ -133,5 +133,5 @@ function PropertiesField({entityTypeSelection, value, onUpdate}: {
     const {entityTypeSelections} = useEntityTypeSelections();
     const ets = entityTypeSelections.find(ets => ets.id === entityTypeSelection);
 
-    return ets ? <Properties properties={value} dataset={ets.dataset} onChange={onUpdate}/> : undefined;
+    return ets ? <Properties properties={value} datasetRef={ets.dataset!} onChange={onUpdate}/> : undefined;
 }

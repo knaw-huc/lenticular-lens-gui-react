@@ -1,22 +1,33 @@
 import {useState} from 'react';
 import {ResultItem, Results} from 'components/Results.tsx';
 import DownloadStatus from 'components/DownloadStatus.tsx';
-import {useDatasets} from 'queries/datasets.ts';
-import {Collection, Dataset, DatasetRef} from 'utils/interfaces.ts';
+import {useDatasetsTimbuctoo} from 'queries/datasets_timbuctoo.ts';
+import {EntityType, TimbuctooDataset, TimbuctooDatasetRef} from 'utils/interfaces.ts';
 import {LabelGroup, Properties} from 'utils/components.tsx';
 import classes from './DatasetBrowser.module.css';
 
 export default function DatasetBrowser({datasetRef, updateDatasetRef}: {
-    datasetRef: DatasetRef,
-    updateDatasetRef: (datasetRef: DatasetRef) => void
+    datasetRef: TimbuctooDatasetRef | null,
+    updateDatasetRef: (datasetRef: TimbuctooDatasetRef) => void
 }) {
+    if (datasetRef === null)
+        datasetRef = {
+            type: 'timbuctoo',
+            graphql_endpoint: '',
+            timbuctoo_id: '',
+            entity_type_id: '',
+        };
+
     function updateEndpoint(endpoint: string) {
-        updateDatasetRef({...datasetRef, timbuctoo_graphql: endpoint});
+        updateDatasetRef({
+            ...(datasetRef as TimbuctooDatasetRef),
+            graphql_endpoint: endpoint,
+        });
     }
 
     return (
         <div className={classes.datasetBrowser}>
-            <EndpointSelection endpoint={datasetRef.timbuctoo_graphql} onNewEndpoint={updateEndpoint}/>
+            <EndpointSelection endpoint={datasetRef.graphql_endpoint} onNewEndpoint={updateEndpoint}/>
             <DataSelection datasetRef={datasetRef} updateDatasetRef={updateDatasetRef}/>
         </div>
     );
@@ -34,35 +45,35 @@ function EndpointSelection({endpoint, onNewEndpoint}: { endpoint: string, onNewE
 }
 
 function DataSelection({datasetRef, updateDatasetRef}: {
-    datasetRef: DatasetRef,
-    updateDatasetRef: (datasetRef: DatasetRef) => void
+    datasetRef: TimbuctooDatasetRef,
+    updateDatasetRef: (datasetRef: TimbuctooDatasetRef) => void
 }) {
-    const {data} = useDatasets(datasetRef.timbuctoo_graphql);
+    const {data} = useDatasetsTimbuctoo(datasetRef.graphql_endpoint);
 
-    function updateDataset(datasetId: string) {
-        updateDatasetRef({...datasetRef, dataset_id: datasetId});
+    function updateTimbuctooId(timbuctooId: string) {
+        updateDatasetRef({...datasetRef, timbuctoo_id: timbuctooId});
     }
 
-    function updateCollection(collectionId: string) {
-        updateDatasetRef({...datasetRef, collection_id: collectionId});
+    function updateEntityTypeId(entityTypeId: string) {
+        updateDatasetRef({...datasetRef, entity_type_id: entityTypeId});
     }
 
     return (
         <div className={classes.dataSelection}>
             <DatasetSelection datasets={data}
-                              selectedDataset={datasetRef.dataset_id}
-                              setSelectedDataset={updateDataset}/>
+                              selectedDataset={datasetRef.timbuctoo_id}
+                              setSelectedDataset={updateTimbuctooId}/>
 
-            {datasetRef.dataset_id !== '' && <EntitySelection
+            {datasetRef.timbuctoo_id !== '' && <EntitySelection
                 datasetRef={datasetRef}
-                collections={data[datasetRef.dataset_id].collections}
-                setSelectedCollection={updateCollection}/>}
+                entityTypes={data[datasetRef.timbuctoo_id].entity_types}
+                setSelectedCollection={updateEntityTypeId}/>}
         </div>
     );
 }
 
 function DatasetSelection({datasets, selectedDataset, setSelectedDataset}: {
-    datasets: { [datasetId: string]: Dataset }
+    datasets: { [timbuctooId: string]: TimbuctooDataset }
     selectedDataset: string,
     setSelectedDataset: (datasetId: string) => void
 }) {
@@ -78,14 +89,16 @@ function DatasetSelection({datasets, selectedDataset, setSelectedDataset}: {
     );
 }
 
-function DatasetReference({dataset}: { dataset: Dataset }) {
+function DatasetReference({dataset}: { dataset: TimbuctooDataset }) {
+    const name = dataset.timbuctoo_id.split('__')[1];
+
     return (
         <div>
             <div className={classes.title}>
                 {dataset.title}
 
-                {dataset.title !== dataset.name && <span className={classes.name}>
-                    {dataset.name}
+                {dataset.title !== name && <span className={classes.name}>
+                    {name}
                 </span>}
             </div>
 
@@ -96,43 +109,40 @@ function DatasetReference({dataset}: { dataset: Dataset }) {
     );
 }
 
-function EntitySelection({datasetRef, collections, setSelectedCollection}: {
-    datasetRef: DatasetRef,
-    collections: { [collectionId: string]: Collection },
-    setSelectedCollection: (collectionId: string,) => void
+function EntitySelection({datasetRef, entityTypes, setSelectedCollection}: {
+    datasetRef: TimbuctooDatasetRef,
+    entityTypes: { [entityTypeId: string]: EntityType },
+    setSelectedCollection: (entityTypeId: string,) => void
 }) {
     return (
         <Results distinctLines={false} className={classes.entities}>
-            {Object.entries(collections).map(([collectionId, collection]) =>
-                <ResultItem key={collectionId} isSelected={datasetRef.collection_id === collectionId}
-                            onClick={() => setSelectedCollection(collectionId)}>
-                    <EntityReference collection={collection} collectionId={collectionId} datasetRef={datasetRef}/>
+            {Object.entries(entityTypes).map(([entityTypeId, entityType]) =>
+                <ResultItem key={entityTypeId} isSelected={datasetRef.entity_type_id === entityTypeId}
+                            onClick={() => setSelectedCollection(entityTypeId)}>
+                    <EntityReference entityType={entityType} datasetRef={datasetRef}/>
                 </ResultItem>
             )}
         </Results>
     );
 }
 
-function EntityReference({collection, collectionId, datasetRef}: {
-    collection: Collection,
-    collectionId: string,
-    datasetRef: DatasetRef
+function EntityReference({entityType, datasetRef}: {
+    entityType: EntityType,
+    datasetRef: TimbuctooDatasetRef
 }) {
     return (
         <div>
             <div className={classes.title}>
-                {collection.title || collection.shortenedUri}
+                {entityType.label || entityType.shortened_uri}
 
-                {collection.title && <span className={classes.name}>
-                    {collection.shortenedUri}
+                {entityType.label && <span className={classes.name}>
+                    {entityType.shortened_uri}
                 </span>}
             </div>
 
             <Properties>
-                <div>Total entities: {collection.total.toLocaleString('en')}</div>
-                <DownloadStatus graphqlEndpoint={datasetRef.timbuctoo_graphql}
-                                datasetId={datasetRef.dataset_id}
-                                collectionId={collectionId}/>
+                <div>Total entities: {entityType.total.toLocaleString('en')}</div>
+                <DownloadStatus datasetRef={{...datasetRef, entity_type_id: entityType.id}}/>
             </Properties>
         </div>
     );

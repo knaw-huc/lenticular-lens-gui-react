@@ -53,19 +53,13 @@ export default function useViews() {
                 const ets = entityTypeSelections.find(ets => ets.id === etsId)!;
 
                 const propsIdx = propertiesToRemove.findIndex(prop =>
-                    prop.timbuctoo_graphql === ets.dataset.timbuctoo_graphql &&
-                    prop.dataset_id === ets.dataset.dataset_id &&
-                    prop.collection_id === ets.dataset.collection_id
-                );
+                    JSON.stringify(ets.dataset) === JSON.stringify(prop.dataset));
 
                 if (propsIdx > -1)
                     propertiesToRemove.splice(propsIdx, 1);
 
                 const filterIdx = filtersToRemove.findIndex(filter =>
-                    filter.timbuctoo_graphql === ets.dataset.timbuctoo_graphql &&
-                    filter.dataset_id === ets.dataset.dataset_id &&
-                    filter.collection_id === ets.dataset.collection_id
-                );
+                    JSON.stringify(ets.dataset) === JSON.stringify(filter.dataset));
 
                 if (filterIdx > -1)
                     filtersToRemove.splice(filterIdx, 1);
@@ -73,10 +67,7 @@ export default function useViews() {
 
             for (const toRemove of propertiesToRemove) {
                 const propsIdx = view.properties.findIndex(prop =>
-                    prop.timbuctoo_graphql === toRemove.timbuctoo_graphql &&
-                    prop.dataset_id === toRemove.dataset_id &&
-                    prop.collection_id === toRemove.collection_id
-                );
+                    JSON.stringify(toRemove.dataset) === JSON.stringify(prop.dataset));
 
                 if (propsIdx > -1)
                     view.properties.splice(propsIdx, 1);
@@ -84,10 +75,7 @@ export default function useViews() {
 
             for (const toRemove of filtersToRemove) {
                 const filterIdx = view.filters.findIndex(prop =>
-                    prop.timbuctoo_graphql === toRemove.timbuctoo_graphql &&
-                    prop.dataset_id === toRemove.dataset_id &&
-                    prop.collection_id === toRemove.collection_id
-                );
+                    JSON.stringify(toRemove.dataset) === JSON.stringify(prop.dataset));
 
                 if (filterIdx > -1)
                     view.filters.splice(filterIdx, 1);
@@ -96,37 +84,28 @@ export default function useViews() {
 
         for (const etsId of etsIds) {
             const ets = entityTypeSelections.find(ets => ets.id === etsId)!;
+            if (ets.dataset) {
+                const propsIdx = view.properties.findIndex(prop =>
+                    JSON.stringify(ets.dataset) === JSON.stringify(prop.dataset));
 
-            const propsIdx = view.properties.findIndex(prop =>
-                prop.timbuctoo_graphql === ets.dataset.timbuctoo_graphql &&
-                prop.dataset_id === ets.dataset.dataset_id &&
-                prop.collection_id === ets.dataset.collection_id
-            );
+                if (propsIdx < 0)
+                    view.properties.push({
+                        properties: [['']],
+                        dataset: copy(ets.dataset)
+                    });
 
-            if (propsIdx < 0)
-                view.properties.push({
-                    timbuctoo_graphql: ets.dataset.timbuctoo_graphql,
-                    dataset_id: ets.dataset.dataset_id,
-                    collection_id: ets.dataset.collection_id,
-                    properties: [['']]
-                });
+                const filterIdx = view.filters.findIndex(filter =>
+                    JSON.stringify(ets.dataset) === JSON.stringify(filter.dataset));
 
-            const filterIdx = view.filters.findIndex(filter =>
-                filter.timbuctoo_graphql === ets.dataset.timbuctoo_graphql &&
-                filter.dataset_id === ets.dataset.dataset_id &&
-                filter.collection_id === ets.dataset.collection_id
-            );
-
-            if (filterIdx < 0)
-                view.filters.push({
-                    timbuctoo_graphql: ets.dataset.timbuctoo_graphql,
-                    dataset_id: ets.dataset.dataset_id,
-                    collection_id: ets.dataset.collection_id,
-                    filter: {
-                        type: 'and',
-                        conditions: [],
-                    },
-                });
+                if (filterIdx < 0)
+                    view.filters.push({
+                        filter: {
+                            type: 'and',
+                            conditions: [],
+                        },
+                        dataset: copy(ets.dataset)
+                    });
+            }
         }
 
         const newViews = [...views];

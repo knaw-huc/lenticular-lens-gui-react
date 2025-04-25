@@ -10,10 +10,12 @@ import {
     IconArrowBarToLeft,
     IconArrowBarToRight,
     IconLetterASmall,
-    IconLetterBSmall, IconArrowNarrowRight, IconAB, IconLetterCSmall
+    IconLetterBSmall,
+    IconArrowNarrowRight,
+    IconAB,
+    IconLetterCSmall
 } from '@tabler/icons-react';
-import {useDatasets} from 'queries/datasets.ts';
-import {startDownload, useDownloads} from 'queries/downloads.ts';
+import useDataset from 'hooks/useDataset.ts';
 import DownloadStatus from 'components/DownloadStatus.tsx';
 import {DatasetRef} from 'utils/interfaces.ts';
 import {Properties} from 'utils/components.tsx';
@@ -51,20 +53,16 @@ export default function Property(
         onTransformerListAdd?: () => void,
         onChange?: (newProperty: string[], prevProperty: string[]) => void
     }) {
-    const {data: downloads} = useDownloads();
-    const {data} = useDatasets(datasetRef.timbuctoo_graphql);
+    const {dataset, entityType, getDownloadInfo, startDownload} = useDataset(datasetRef)!;
 
-    const dataset = data[datasetRef.dataset_id];
     const entities = [
-        datasetRef.collection_id,
+        entityType.id,
         ...property
             .filter(prop => prop !== stopProperty && prop !== '')
             .filter((_, idx) => idx % 2 === 1)
     ];
 
-    const notDownloaded = entities.filter(entity =>
-        ![...downloads.downloading, ...downloads.downloaded].find(downloadInfo =>
-            downloadInfo.dataset_id === datasetRef.dataset_id && downloadInfo.collection_id === entity));
+    const notDownloaded = entities.filter(entity => getDownloadInfo(entity) === null);
 
     const buttons: [ReactNode, string, () => void][] = [];
     onAdd && buttons.push([
@@ -83,28 +81,28 @@ export default function Property(
     const doCollapseButtonOverride = <IconButtonContent Icon={IconArrowBarToLeft} label="Collapse"/>;
     const undoCollapseButtonOverride = <IconButtonContent Icon={IconArrowBarToRight} label="Collapse"/>;
 
-    function getCollectionOptions(collection: string, property: string, searchValue: string) {
+    function getEntityTypeOptions(entityTypeId: string, property: string, searchValue: string) {
         const s = searchValue.toLowerCase();
-        return [stopProperty, ...dataset.collections[collection].properties[property].referencedCollections.filter(collectionId => {
-            const collection = dataset.collections[collectionId];
+        return [stopProperty, ...dataset.entity_types[entityTypeId].properties[property].referenced.filter(entityTypeId => {
+            const entityType = dataset.entity_types[entityTypeId];
 
-            const optionMatches = (collectionId || '').toLowerCase().indexOf(s) > -1;
-            const shortUriMatches = collection && (collection.shortenedUri || '').toLowerCase().indexOf(s) > -1;
-            const uriMatches = collection && (collection.uri || '').toLowerCase().indexOf(s) > -1;
+            const optionMatches = (entityTypeId || '').toLowerCase().indexOf(s) > -1;
+            const shortUriMatches = entityType && (entityType.shortened_uri || '').toLowerCase().indexOf(s) > -1;
+            const uriMatches = entityType && (entityType.uri || '').toLowerCase().indexOf(s) > -1;
 
             return optionMatches || shortUriMatches || uriMatches;
         })];
     }
 
-    function getPropertyOptions(collection: string, searchValue: string) {
+    function getPropertyOptions(entityTypeId: string, searchValue: string) {
         const s = searchValue.toLowerCase();
-        return Object.keys(dataset.collections[collection].properties).filter(propertyId => {
-            const property = dataset.collections[collection].properties[propertyId];
+        return Object.keys(dataset.entity_types[entityTypeId].properties).filter(propertyId => {
+            const property = dataset.entity_types[entityTypeId].properties[propertyId];
 
             const linksOnlyMatches = !allowLinksOnly || (property &&
-                (property.isLink || property.name === 'uri'));
+                (property.is_link || property.id === 'uri'));
             const optionMatches = (propertyId || '').toLowerCase().indexOf(s) > -1;
-            const shortUriMatches = property && (property.shortenedUri || '').toLowerCase().indexOf(s) > -1;
+            const shortUriMatches = property && (property.shortened_uri || '').toLowerCase().indexOf(s) > -1;
             const uriMatches = property && (property.uri || '').toLowerCase().indexOf(s) > -1;
 
             return linksOnlyMatches && (optionMatches || shortUriMatches || uriMatches);
@@ -116,89 +114,85 @@ export default function Property(
             onChange(newProperty.map(prop => prop || ''), prevProperty.map(prop => prop || ''));
     }
 
-    function getCollectionLabel(collectionId: string) {
-        return dataset.collections[collectionId]?.shortenedUri || collectionId;
+    function getEntityTypeLabel(entityTypeId: string) {
+        return dataset.entity_types[entityTypeId]?.shortened_uri || entityTypeId;
     }
 
-    function getPropertyLabel(collectionId: string, propertyId: string) {
-        const collection = dataset.collections[collectionId];
-        return (collection?.properties[propertyId]?.isInverse ? '← ' : '')
-            + (collection?.properties[propertyId]?.shortenedUri || propertyId);
+    function getPropertyLabel(entityTypeId: string, propertyId: string) {
+        const entityType = dataset.entity_types[entityTypeId];
+        return (entityType?.properties[propertyId]?.is_inverse ? '← ' : '')
+            + (entityType?.properties[propertyId]?.shortened_uri || propertyId);
     }
 
-    function getCollectionOption(collectionId: string) {
-        const collection = collectionId !== stopProperty ? dataset.collections[collectionId] : null;
+    function getEntityTypeOption(entityTypeId: string) {
+        const entityType = entityTypeId !== stopProperty ? dataset.entity_types[entityTypeId] : null;
 
         return (
             <div className={classes.option}>
                 <div className={classes.optionMain}>
-                    {collection && getCollectionLabel(collectionId)}
+                    {entityType && getEntityTypeLabel(entityTypeId)}
 
-                    {!collection && <span className={classes.optionStop}>Value</span>}
+                    {!entityType && <span className={classes.optionStop}>Value</span>}
 
-                    {collection?.uri && collection.shortenedUri !== collection.uri && <span>
-                        {collection.uri}
+                    {entityType?.uri && entityType.shortened_uri !== entityType.uri && <span>
+                        {entityType.uri}
                     </span>}
 
-                    {!collection && <span>Do not follow reference</span>}
+                    {!entityType && <span>Do not follow reference</span>}
                 </div>
 
-                {collection && <Properties>
-                    <div>Entities: {collection.total.toLocaleString('en')}</div>
-                    <DownloadStatus graphqlEndpoint={datasetRef.timbuctoo_graphql}
-                                    datasetId={datasetRef.dataset_id}
-                                    collectionId={collectionId}
-                                    showDownloadButton={false}/>
+                {entityType && <Properties>
+                    <div>Entities: {entityType.total.toLocaleString('en')}</div>
+                    <DownloadStatus datasetRef={datasetRef} showDownloadButton={false}/>
                 </Properties>}
             </div>
         );
     }
 
-    function getPropertyOption(collectionId: string, propertyId: string) {
-        const property = dataset.collections[collectionId].properties[propertyId];
+    function getPropertyOption(entityTypeId: string, propertyId: string) {
+        const property = dataset.entity_types[entityTypeId].properties[propertyId];
 
         return (
             <div className={classes.option}>
                 <div className={classes.optionMain}>
-                    {getPropertyLabel(collectionId, propertyId)}
+                    {getPropertyLabel(entityTypeId, propertyId)}
 
-                    {property?.uri && property.shortenedUri !== property.uri && <span>
+                    {property?.uri && property.shortened_uri !== property.uri && <span>
                         {property.uri}
                     </span>}
                 </div>
 
                 <Properties>
-                    <div>Density: {property.density}%</div>
-                    {property.isValueType && <div>Has values</div>}
-                    {property.isLink && !property.isInverse && <div>Has links to another collection</div>}
-                    {property.isLink && property.isInverse && <div>Has inverted links to another collection</div>}
+                    <div>Density: {property.rows_count * entityType.total}%</div>
+                    {property.is_value_type && <div>Has values</div>}
+                    {property.is_link && !property.is_inverse && <div>Has links to another collection</div>}
+                    {property.is_link && property.is_inverse && <div>Has inverted links to another collection</div>}
                 </Properties>
             </div>
         );
     }
 
     async function startDownloading() {
-        await Promise.all(notDownloaded.map(async collectionId =>
-            startDownload(datasetRef.timbuctoo_graphql, datasetRef.dataset_id, collectionId)));
+        await Promise.all(notDownloaded.map(async entityTypeId => startDownload(entityTypeId)));
     }
 
     return (
         <PropertyPath propertyPath={property.map(prop => prop === '' ? null : prop)}
-                      startCollection={datasetRef.collection_id}
+                      startCollection={entityType.id}
                       buttons={buttons}
                       onChange={onPropertyChange}
                       className={classes.property}
                       stopProperty={stopProperty}
                       infoLabels={showLabel ? [
-                          dataset.name,
-                          dataset.collections[datasetRef.collection_id].shortenedUri
+                          dataset.title,
+                          entityType.label || entityType.shortened_uri
                       ] : undefined}
                       values={values}
-                      getCollectionLabel={getCollectionLabel}
+                      getCollectionLabel={getEntityTypeLabel}
                       getPropertyLabel={getPropertyLabel}
-                      getCollectionOptions={getCollectionOptions}
+                      getCollectionOptions={getEntityTypeOptions}
                       getPropertyOptions={getPropertyOptions}
-                      getCollectionOption={getCollectionOption}
+                      getCollectionOption={getEntityTypeOption}
                       getPropertyOption={getPropertyOption}
                       readOnly={readOnly}
                       allowCollapse={allowCollapse}
@@ -209,14 +203,11 @@ export default function Property(
 }
 
 export function PropertyLabel({datasetRef, className}: { datasetRef: DatasetRef, className?: string }) {
-    const {data} = useDatasets(datasetRef.timbuctoo_graphql);
-    const dataset = data[datasetRef.dataset_id];
+    const {dataset, entityType} = useDataset(datasetRef)!;
 
     return (
-        <PropertyPathLabels className={clsx(classes.property, className)} labels={[
-            dataset.name,
-            dataset.collections[datasetRef.collection_id].shortenedUri
-        ]}/>
+        <PropertyPathLabels className={clsx(classes.property, className)}
+                            labels={[dataset.title, entityType.shortened_uri]}/>
     );
 }
 

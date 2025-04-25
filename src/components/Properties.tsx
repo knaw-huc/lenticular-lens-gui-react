@@ -2,9 +2,9 @@ import Property from 'components/Property.tsx';
 import DraggableList from 'components/DraggableList.tsx';
 import {DatasetRef} from 'utils/interfaces.ts';
 
-export default function Properties({properties, dataset, onChange, className}: {
+export default function Properties({properties, datasetRef, onChange, className}: {
     properties: string[][],
-    dataset: DatasetRef,
+    datasetRef: DatasetRef,
     onChange: (newProperties: string[][]) => void,
     className?: string
 }) {
@@ -25,7 +25,7 @@ export default function Properties({properties, dataset, onChange, className}: {
     return (
         <DraggableList className={className} list={properties} onChange={onChange}>
             {(property, idx) =>
-                <Property property={property} datasetRef={dataset} allowCollapse
+                <Property property={property} datasetRef={datasetRef} allowCollapse
                           onAdd={() => changeProperties(idx, true)}
                           onRemove={properties.length > 1 ? () => changeProperties(idx, false) : undefined}
                           onChange={newProperty => changeProperty(idx, newProperty)}/>}

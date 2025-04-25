@@ -179,11 +179,7 @@ function ClusterResultItem({jobId, type, id, cluster, inSelection, setInSelectio
                                   allowCollapse
                                   property={values.property}
                                   values={values.values}
-                                  datasetRef={{
-                                      timbuctoo_graphql: values.graphql_endpoint,
-                                      dataset_id: values.dataset_id,
-                                      collection_id: values.collection_id
-                                  }}/>
+                                  datasetRef={values.dataset}/>
                     )}
                 </div>}
             </div>

@@ -12,11 +12,7 @@ export default function useEntityTypeSelections() {
             created: new Date().toISOString(),
             label: `New Data Selection ${entityTypeSelections.length + 1}`,
             description: '',
-            dataset: {
-                dataset_id: '',
-                collection_id: '',
-                timbuctoo_graphql: 'https://repository.goldenagents.org/v5/graphql',
-            },
+            dataset: null,
             filter: {
                 type: 'and',
                 conditions: [],

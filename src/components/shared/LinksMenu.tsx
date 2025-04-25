@@ -197,11 +197,11 @@ function ViewPropertiesModal({view, onClose}: { view: View, onClose: (properties
         </button>}>
             <div className={classes.modal}>
                 {properties.map((datasetProperties, idx) => <div key={idx} className={classes.datasetPart}>
-                    <PropertyLabel className={classes.datasetLabel} datasetRef={datasetProperties}/>
+                    <PropertyLabel className={classes.datasetLabel} datasetRef={datasetProperties.dataset}/>
 
                     <Properties className={classes.datasetProps}
                                 properties={datasetProperties.properties}
-                                dataset={datasetProperties}
+                                datasetRef={datasetProperties.dataset}
                                 onChange={newProperties => onChange(idx, newProperties)}/>
                 </div>)}
             </div>
@@ -226,11 +226,14 @@ function ViewFiltersModal({view, onClose}: { view: View, onClose: (filters: View
         </button>}>
             <div className={classes.modal}>
                 {filters.map((datasetFilters, idx) => <div key={idx} className={classes.datasetPart}>
-                    <PropertyLabel className={classes.datasetLabel} datasetRef={datasetFilters}/>
+                    <PropertyLabel className={classes.datasetLabel} datasetRef={datasetFilters.dataset}/>
 
                     <LogicTree logicTree={datasetFilters.filter}
                                elementsKey="conditions"
-                               LeafComponent={props => FilterCondition({...props, dataset: datasetFilters})}
+                               LeafComponent={props => FilterCondition({
+                                   ...props,
+                                   dataset: datasetFilters.dataset
+                               })}
                                add={() => ({type: '', property: ['']})}
                                onChange={changed => onChange(idx, changed)}/>
                 </div>)}

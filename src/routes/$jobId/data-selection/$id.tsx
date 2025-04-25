@@ -21,7 +21,7 @@ function DataSelection() {
     const {linksetSpecs} = useLinksetSpecs();
     const {data: linksets} = useLinksets(jobId);
     const ets = entityTypeSelections.find(ets => ets.id === parseInt(id))!;
-    const hasDataset = ets.dataset.dataset_id !== '' && ets.dataset.collection_id !== '';
+    const hasDataset = ets.dataset !== null;
     const isInUse = isEntityTypeUsedInLinkset(ets.id, linksetSpecs, linksets);
 
     return (

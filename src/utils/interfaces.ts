@@ -137,55 +137,56 @@ export interface PropertyConfigItem extends ConfigItem {
     entity_type_selection_key: string;
 }
 
-export interface Downloads {
-    downloaded: Download[];
-    downloading: Download[];
-}
-
 export interface Download {
-    graphql_endpoint: string;
     dataset_id: string;
-    collection_id: string;
+    entity_type_id: string;
     rows_count: number;
     total: number;
 }
 
-export interface Dataset {
-    uri: string;
-    name: string;
-    title: string;
-    description: string | null;
-    prefixMappings: { [prefix: string]: string };
-    collections: { [id: string]: Collection };
+export interface TimbuctooDownload extends Download {
+    graphql_endpoint: string;
+    timbuctoo_id: string;
 }
 
-export interface Collection {
+export interface Dataset {
+    id: string;
+    type: 'timbuctoo' | 'sparql' | 'rdf';
+    title: string;
+    description: string | null;
+    entity_types: { [id: string]: EntityType };
+}
+
+export interface TimbuctooDataset extends Dataset {
+    type: 'timbuctoo';
+    graphql_endpoint: string;
+    timbuctoo_id: string;
+}
+
+export interface EntityType {
+    id: string;
+    label: string | null;
     uri: string;
-    title: string | null;
-    shortenedUri: string;
+    shortened_uri: string;
     total: number;
     downloaded: boolean;
     properties: { [id: string]: Property };
 }
 
 export interface Property {
-    name: string;
-    prefix: string;
+    id: string;
     uri: string;
-    prefixUri: string;
-    shortenedUri: string;
-    density: number;
-    isInverse: boolean;
-    isLink: boolean;
-    isList: boolean;
-    isValueType: boolean;
-    referencedCollections: string[];
+    shortened_uri: string;
+    rows_count: number;
+    is_inverse: boolean;
+    is_link: boolean;
+    is_list: boolean;
+    is_value_type: boolean;
+    referenced: string[];
 }
 
 export interface PropertyValues {
-    graphql_endpoint: string;
-    dataset_id: string;
-    collection_id: string;
+    dataset: DatasetRef;
     property: PropertyPath;
     values: string[];
 }
@@ -328,15 +329,20 @@ export interface JobUpdateData {
 export interface EntityTypeSelection extends BasicMetadata {
     limit: number;
     random: boolean;
-    dataset: DatasetRef;
+    dataset: DatasetRef | null;
     filter: Filter;
     properties: PropertyPath[];
 }
 
 export interface DatasetRef {
-    timbuctoo_graphql: string;
-    dataset_id: string;
-    collection_id: string;
+    type: 'timbuctoo' | 'sparql' | 'rdf';
+    entity_type_id: string;
+}
+
+export interface TimbuctooDatasetRef extends DatasetRef {
+    type: 'timbuctoo';
+    graphql_endpoint: string;
+    timbuctoo_id: string;
 }
 
 export interface Filter extends LogicTree<'conditions', FilterCondition> {
@@ -431,12 +437,14 @@ export interface View extends BasicRef {
     properties: ViewProperty[];
 }
 
-export interface ViewFilter extends DatasetRef {
+export interface ViewFilter {
     filter: Filter;
+    dataset: DatasetRef;
 }
 
-export interface ViewProperty extends DatasetRef {
+export interface ViewProperty {
     properties: PropertyPath[];
+    dataset: DatasetRef;
 }
 
 export interface Processing {
@@ -454,13 +462,7 @@ export interface Processing {
     dynamic_uri_prefix_mappings: { [key: string]: string };
 }
 
-export interface ProcessingWithMappings extends Processing {
-    prefix_mappings: { [key: string]: string };
-    uri_prefix_mappings: { [key: string]: string };
-    dynamic_uri_prefix_mappings: { [key: string]: string };
-}
-
-export interface Linkset extends ProcessingWithMappings {
+export interface Linkset extends Processing {
     links_progress: number | null;
     linkset_entities_count: number | null;
     linkset_sources_count: number | null;
@@ -470,7 +472,7 @@ export interface Linkset extends ProcessingWithMappings {
     entities_count: number | null;
 }
 
-export interface Lens extends ProcessingWithMappings {
+export interface Lens extends Processing {
     lens_entities_count: number;
     lens_sources_count: number;
     lens_targets_count: number;
