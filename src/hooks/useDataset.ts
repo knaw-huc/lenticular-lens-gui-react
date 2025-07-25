@@ -1,35 +1,36 @@
 import {useDatasetsTimbuctoo, datasetRefIsTimbuctoo} from 'queries/datasets_timbuctoo.ts';
-import {useDownloadsTimbuctoo, startDownloadTimbuctoo} from 'queries/downloads_timbuctoo.ts';
-import {DatasetRef, Dataset, EntityType, Download, TimbuctooDatasetRef} from 'utils/interfaces.ts';
+import {datasetRefIsSPARQL, useDatasetsSPARQL} from 'queries/datasets_sparql.ts';
+import {DatasetRef, Dataset, EntityType, TimbuctooDatasetRef, SPARQLDatasetRef} from 'utils/interfaces.ts';
 
 interface DatasetHook {
-    dataset: Dataset;
-    entityType: EntityType;
-    getDownloadInfo: (entityTypeId: string) => Download | null;
-    startDownload: (entityTypeId: string) => Promise<Response>;
+    dataset: Dataset | null;
+    entityType: EntityType | null;
 }
 
-export default function useDataset(datasetRef: DatasetRef): DatasetHook | undefined {
-    if (datasetRefIsTimbuctoo(datasetRef))
-        return withTimbuctooDataset(datasetRef);
+export default function useDataset(datasetRef: DatasetRef): DatasetHook {
+    const isTimbuctoo = datasetRefIsTimbuctoo(datasetRef);
+    const isSPARQL = datasetRefIsSPARQL(datasetRef);
+
+    const timbuctoo = withTimbuctooDataset(datasetRef as TimbuctooDatasetRef);
+    const sparql = withSPARQLDataset(datasetRef as SPARQLDatasetRef);
+
+    return isTimbuctoo ? timbuctoo : (isSPARQL ? sparql : {dataset: null, entityType: null});
 }
 
 function withTimbuctooDataset(datasetRef: TimbuctooDatasetRef): DatasetHook {
-    const {data: downloads} = useDownloadsTimbuctoo();
-    const {data} = useDatasetsTimbuctoo(datasetRef.graphql_endpoint);
+    const {data: datasets} = useDatasetsTimbuctoo(datasetRef.graphql_endpoint || '');
 
-    const dataset = data[datasetRef.timbuctoo_id];
-    const entityType = dataset.entity_types[datasetRef.entity_type_id];
+    const dataset = datasets ? datasets[datasetRef.timbuctoo_id] : null;
+    const entityType = dataset ? dataset.entity_types[datasetRef.entity_type_id] : null;
 
-    return {
-        dataset,
-        entityType,
-        getDownloadInfo: (entityTypeId: string) =>
-            downloads.find(downloadInfo =>
-                downloadInfo.graphql_endpoint === datasetRef.graphql_endpoint &&
-                downloadInfo.timbuctoo_id === datasetRef.timbuctoo_id &&
-                downloadInfo.entity_type_id === entityTypeId) || null,
-        startDownload: (entityTypeId: string) =>
-            startDownloadTimbuctoo(datasetRef.graphql_endpoint, datasetRef.timbuctoo_id, entityTypeId),
-    };
+    return {dataset, entityType};
+}
+
+function withSPARQLDataset(datasetRef: SPARQLDatasetRef): DatasetHook {
+    const {data: datasets} = useDatasetsSPARQL(datasetRef.sparql_endpoint || '');
+
+    const dataset = datasets ? datasets[datasetRef.sparql_endpoint] : null;
+    const entityType = dataset ? dataset.entity_types[datasetRef.entity_type_id] : null;
+
+    return {dataset, entityType};
 }

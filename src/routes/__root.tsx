@@ -5,6 +5,7 @@ import {useQueryClient} from '@tanstack/react-query';
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
 import {RootContext} from 'context/RootContext.tsx';
 import {prefetchMethods} from 'queries/methods.ts';
+import {prefetchDownloadsSPARQL} from 'queries/downloads_sparql.ts';
 import {prefetchDownloadsTimbuctoo} from 'queries/downloads_timbuctoo.ts';
 import {setUpSocket} from 'queries/socket.ts';
 import QueryStateBoundary from 'components/QuerySateBoudary.tsx';
@@ -91,6 +92,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     }),
     loader: ({context: {queryClient}}) => {
         prefetchMethods(queryClient);
+        prefetchDownloadsSPARQL(queryClient);
         prefetchDownloadsTimbuctoo(queryClient);
     }
 });

@@ -12,6 +12,7 @@ import {prefetchLinksets} from 'queries/linksets.ts';
 import {prefetchLenses} from 'queries/lenses.ts';
 import {prefetchClusterings} from 'queries/clusterings.ts';
 import {prefetchDatasetsTimbuctooForJob} from 'queries/datasets_timbuctoo.ts';
+import {prefetchDatasetsSPARQLForJob} from 'queries/datasets_sparql.ts';
 import {setUpJobSocket} from 'queries/socket.ts';
 import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
 import useLinksetSpecs from 'hooks/useLinksetSpecs.ts';
@@ -38,6 +39,7 @@ function Job() {
 
     useEffect(() => {
         prefetchDatasetsTimbuctooForJob(queryClient, job);
+        prefetchDatasetsSPARQLForJob(queryClient, job);
     }, [queryClient, job]);
 
     return (

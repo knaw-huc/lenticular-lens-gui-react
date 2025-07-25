@@ -1,7 +1,11 @@
+.type {
+    margin-bottom: 1em;
+}
+
 .dataset {
     display: flex;
     flex-direction: column;
-    gap: 2em;
+    gap: 1em;
 }
 
 .entitySelector {
@@ -22,6 +26,30 @@
 
 .placeholder {
     font-style: italic;
+}
+
+.dataSelection {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+
+    .status {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        font-size: 0.8em;
+        font-weight: 700;
+
+        .running {
+            width: 1.5em;
+            height: 1.5em;
+            border-width: 3px;
+        }
+
+        .failed {
+            color: #df3b3b;
+        }
+    }
 }
 
 @media (min-width: 800px) {

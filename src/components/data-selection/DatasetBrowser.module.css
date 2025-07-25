@@ -1,26 +1,9 @@
-.datasetBrowser {
-    display: flex;
-    flex-direction: column;
-    max-width: 90vw;
-    max-height: 85vh;
-
-    li {
-        cursor: pointer;
-    }
-}
-
-.endpoint {
-    flex-shrink: 0;
-    padding: 1em 2em;
-    border-radius: 6px 6px 0 0;
-    background-color: var(--light-color);
-}
-
 .dataSelection {
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
-    overflow: hidden;
+    height: 100%;
+    max-width: 90vw;
+    max-height: 85vh;
 }
 
 .datasets {

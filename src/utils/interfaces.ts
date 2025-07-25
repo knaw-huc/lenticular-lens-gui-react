@@ -142,6 +142,7 @@ export interface Download {
     entity_type_id: string;
     rows_count: number;
     total: number;
+    downloading: boolean;
 }
 
 export interface TimbuctooDownload extends Download {
@@ -149,9 +150,28 @@ export interface TimbuctooDownload extends Download {
     timbuctoo_id: string;
 }
 
+export interface SPARQLDownload extends Download {
+    sparql_endpoint: string;
+}
+
+export interface StatusUpdate {
+    entity_type_id: string;
+    status: 'waiting' | 'running' | 'finished' | 'failed' | 'downloadable';
+}
+
+export interface TimbuctooStatusUpdate extends StatusUpdate {
+    graphql_endpoint: string;
+    timbuctoo_id: string;
+}
+
+export interface SPARQLStatusUpdate extends StatusUpdate {
+    sparql_endpoint: string;
+}
+
 export interface Dataset {
     id: string;
     type: 'timbuctoo' | 'sparql' | 'rdf';
+    name: string | null;
     title: string;
     description: string | null;
     entity_types: { [id: string]: EntityType };
@@ -163,13 +183,24 @@ export interface TimbuctooDataset extends Dataset {
     timbuctoo_id: string;
 }
 
+export interface SPARQLDataset extends Dataset {
+    type: 'sparql';
+    sparql_endpoint: string;
+    status: 'waiting' | 'running' | 'finished' | 'failed';
+}
+
+export interface SPARQLDatasetUpdate {
+    sparql_endpoint: string;
+    status: 'waiting' | 'running' | 'finished' | 'failed';
+}
+
 export interface EntityType {
     id: string;
     label: string | null;
     uri: string;
     shortened_uri: string;
     total: number;
-    downloaded: boolean;
+    status: 'waiting' | 'running' | 'finished' | 'downloadable' | 'failed';
     properties: { [id: string]: Property };
 }
 
@@ -343,6 +374,11 @@ export interface TimbuctooDatasetRef extends DatasetRef {
     type: 'timbuctoo';
     graphql_endpoint: string;
     timbuctoo_id: string;
+}
+
+export interface SPARQLDatasetRef extends DatasetRef {
+    type: 'sparql';
+    sparql_endpoint: string;
 }
 
 export interface Filter extends LogicTree<'conditions', FilterCondition> {

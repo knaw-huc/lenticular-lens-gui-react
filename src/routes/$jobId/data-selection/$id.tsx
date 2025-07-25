@@ -2,7 +2,7 @@ import {Suspense} from 'react';
 import {createFileRoute, notFound} from '@tanstack/react-router';
 import Tabs from 'components/Tabs.tsx';
 import Info from 'components/shared/Info.tsx';
-import Dataset from 'components/data-selection/Dataset.tsx';
+import DatasetSelection from 'components/data-selection/DatasetSelection.tsx';
 import Filter from 'components/data-selection/Filter.tsx';
 import Sample from 'components/data-selection/Sample.tsx';
 import EntityTypeSelectionMenu from 'components/data-selection/EntityTypeSelectionMenu.tsx';
@@ -39,7 +39,7 @@ function DataSelection() {
                     },
                     'dataset': {
                         title: 'Dataset',
-                        content: <Dataset ets={ets} isInUse={isInUse}/>
+                        content: <DatasetSelection ets={ets} isInUse={isInUse}/>
                     },
                     'filter': {
                         title: 'Filter',

@@ -41,7 +41,7 @@ export function RunStatusMenu({className, state = 'succeeded', status, children}
     className?: string,
     state?: 'running' | 'failed' | 'succeeded',
     status?: string,
-    children: ReactNode
+    children?: ReactNode
 }) {
     return (
         <div className={clsx(classes.runStatusMenu, className)}>
@@ -54,9 +54,9 @@ export function RunStatusMenu({className, state = 'succeeded', status, children}
                     {status}
                 </div>}
 
-                <div>
+                {children && <div>
                     {children}
-                </div>
+                </div>}
             </div>
         </div>
     );

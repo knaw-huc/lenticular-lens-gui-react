@@ -2,25 +2,55 @@ import {io} from 'socket.io-client';
 import {QueryClient} from '@tanstack/react-query';
 import {onJobUpdate} from 'queries/job.ts';
 import {resetMethods} from 'queries/methods.ts';
+import {updateEntitiesTimbuctoo} from 'queries/datasets_timbuctoo.ts';
+import {resetDatasetsSPARQL, updateDatasetsSPARQL, updateEntitiesSPARQL} from 'queries/datasets_sparql.ts';
 import {resetDownloadsTimbuctoo, updateDownloadTimbuctoo} from 'queries/downloads_timbuctoo.ts';
+import {resetDownloadsSPARQL, updateDownloadSPARQL} from 'queries/downloads_sparql.ts';
 import {prefetchLinksets, resetLinksets} from 'queries/linksets.ts';
 import {prefetchLenses, resetLenses} from 'queries/lenses.ts';
 import {prefetchClusterings, resetClusterings} from 'queries/clusterings.ts';
 import {
-    Linkset, Lens, Clustering, UnsavedData, AlignmentDelete, AlignmentUpdate, ClusteringDelete, ClusteringUpdate
+    Linkset,
+    Lens,
+    Clustering,
+    UnsavedData,
+    AlignmentDelete,
+    AlignmentUpdate,
+    ClusteringDelete,
+    ClusteringUpdate,
+    SPARQLDatasetUpdate
 } from 'utils/interfaces.ts';
 import {api} from 'utils/config.ts';
 
 export function setUpSocket(queryClient: QueryClient) {
     const socket = io(`${api}/`);
+
+    socket.on('sparql_load_update', e => updateDatasetsSPARQL(queryClient, JSON.parse(e)));
+    socket.on('sparql_status_update', e => updateEntitiesSPARQL(queryClient, JSON.parse(e)));
+    socket.on('timbuctoo_status_update', e => updateEntitiesTimbuctoo(queryClient, JSON.parse(e)));
+
+    socket.on('sparql_update', e => updateDownloadSPARQL(queryClient, JSON.parse(e)));
     socket.on('timbuctoo_update', e => updateDownloadTimbuctoo(queryClient, JSON.parse(e)));
+
+    socket.on('sparql_load_delete', e => onSPARQLDatasetsDelete(queryClient, JSON.parse(e)));
+    socket.on('sparql_delete', _ => resetDownloadsSPARQL(queryClient));
     socket.on('timbuctoo_delete', _ => resetDownloadsTimbuctoo(queryClient));
+
     socket.on('extension_update', _ => resetMethods(queryClient));
     socket.io.on('reconnect', _ => resetDownloadsTimbuctoo(queryClient));
 
     return () => {
+        socket.off('sparql_load_update');
+        socket.off('sparql_status_update');
+        socket.off('timbuctoo_status_update');
+
+        socket.off('sparql_update');
         socket.off('timbuctoo_update');
+
+        socket.off('sparql_load_delete');
+        socket.off('sparql_delete');
         socket.off('timbuctoo_delete');
+
         socket.off('extension_update');
         socket.io.off('reconnect');
         socket.disconnect();
@@ -31,21 +61,31 @@ export function setUpJobSocket(queryClient: QueryClient, jobId: string,
                                getUnsavedData: () => UnsavedData, updateUnsavedData: (unsavedData: UnsavedData) => void) {
     const socket = io(`${api}/${jobId}`);
     socket.on('job_update', e => onJobUpdate(queryClient, JSON.parse(e), getUnsavedData(), updateUnsavedData));
+
     socket.on('alignment_update', e => onAlignmentUpdate(queryClient, JSON.parse(e)));
-    socket.on('alignment_delete', e => onAlignmentDelete(queryClient, JSON.parse(e)));
     socket.on('clustering_update', e => onClusteringUpdate(queryClient, JSON.parse(e)));
+
+    socket.on('alignment_delete', e => onAlignmentDelete(queryClient, JSON.parse(e)));
     socket.on('clustering_delete', e => onClusteringDelete(queryClient, JSON.parse(e)));
+
     socket.io.on('reconnect', _ => onReconnect(queryClient, jobId, getUnsavedData(), updateUnsavedData));
 
     return () => {
         socket.off('job_update');
+
         socket.off('alignment_update');
-        socket.off('alignment_delete');
         socket.off('clustering_update');
+
+        socket.off('alignment_delete');
         socket.off('clustering_delete');
+
         socket.io.off('reconnect');
         socket.disconnect();
     };
+}
+
+async function onSPARQLDatasetsDelete(queryClient: QueryClient, data: SPARQLDatasetUpdate) {
+    return resetDatasetsSPARQL(queryClient, data.sparql_endpoint);
 }
 
 async function onAlignmentUpdate(queryClient: QueryClient, data: AlignmentUpdate) {

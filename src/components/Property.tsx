@@ -16,6 +16,7 @@ import {
     IconLetterCSmall
 } from '@tabler/icons-react';
 import useDataset from 'hooks/useDataset.ts';
+import useDatasets from 'hooks/useDatasets.ts';
 import DownloadStatus from 'components/DownloadStatus.tsx';
 import {DatasetRef} from 'utils/interfaces.ts';
 import {Properties} from 'utils/components.tsx';
@@ -53,7 +54,11 @@ export default function Property(
         onTransformerListAdd?: () => void,
         onChange?: (newProperty: string[], prevProperty: string[]) => void
     }) {
-    const {dataset, entityType, getDownloadInfo, startDownload} = useDataset(datasetRef)!;
+    const {dataset, entityType} = useDataset(datasetRef);
+    const {getDownloadInfo, startDownload} = useDatasets(datasetRef);
+
+    if (!dataset || !entityType)
+        return;
 
     const entities = [
         entityType.id,
@@ -62,7 +67,8 @@ export default function Property(
             .filter((_, idx) => idx % 2 === 1)
     ];
 
-    const notDownloaded = entities.filter(entity => getDownloadInfo(entity) === null);
+    const notDownloaded = entities.filter(entity =>
+        dataset.entity_types[entity]?.status === 'finished' && getDownloadInfo(entity) === null);
 
     const buttons: [ReactNode, string, () => void][] = [];
     onAdd && buttons.push([
@@ -83,8 +89,8 @@ export default function Property(
 
     function getEntityTypeOptions(entityTypeId: string, property: string, searchValue: string) {
         const s = searchValue.toLowerCase();
-        return [stopProperty, ...dataset.entity_types[entityTypeId].properties[property].referenced.filter(entityTypeId => {
-            const entityType = dataset.entity_types[entityTypeId];
+        return [stopProperty, ...dataset!.entity_types[entityTypeId].properties[property].referenced.filter(entityTypeId => {
+            const entityType = dataset!.entity_types[entityTypeId];
 
             const optionMatches = (entityTypeId || '').toLowerCase().indexOf(s) > -1;
             const shortUriMatches = entityType && (entityType.shortened_uri || '').toLowerCase().indexOf(s) > -1;
@@ -96,8 +102,8 @@ export default function Property(
 
     function getPropertyOptions(entityTypeId: string, searchValue: string) {
         const s = searchValue.toLowerCase();
-        return Object.keys(dataset.entity_types[entityTypeId].properties).filter(propertyId => {
-            const property = dataset.entity_types[entityTypeId].properties[propertyId];
+        return Object.keys(dataset!.entity_types[entityTypeId].properties).filter(propertyId => {
+            const property = dataset!.entity_types[entityTypeId].properties[propertyId];
 
             const linksOnlyMatches = !allowLinksOnly || (property &&
                 (property.is_link || property.id === 'uri'));
@@ -115,17 +121,17 @@ export default function Property(
     }
 
     function getEntityTypeLabel(entityTypeId: string) {
-        return dataset.entity_types[entityTypeId]?.shortened_uri || entityTypeId;
+        return dataset!.entity_types[entityTypeId]?.shortened_uri || entityTypeId;
     }
 
     function getPropertyLabel(entityTypeId: string, propertyId: string) {
-        const entityType = dataset.entity_types[entityTypeId];
+        const entityType = dataset!.entity_types[entityTypeId];
         return (entityType?.properties[propertyId]?.is_inverse ? '← ' : '')
             + (entityType?.properties[propertyId]?.shortened_uri || propertyId);
     }
 
     function getEntityTypeOption(entityTypeId: string) {
-        const entityType = entityTypeId !== stopProperty ? dataset.entity_types[entityTypeId] : null;
+        const entityType = entityTypeId !== stopProperty ? dataset!.entity_types[entityTypeId] : null;
 
         return (
             <div className={classes.option}>
@@ -143,14 +149,14 @@ export default function Property(
 
                 {entityType && <Properties>
                     <div>Entities: {entityType.total.toLocaleString('en')}</div>
-                    <DownloadStatus datasetRef={datasetRef} showDownloadButton={false}/>
+                    <DownloadStatus datasetRef={datasetRef} entityType={entityType} showDownloadButton={false}/>
                 </Properties>}
             </div>
         );
     }
 
     function getPropertyOption(entityTypeId: string, propertyId: string) {
-        const property = dataset.entity_types[entityTypeId].properties[propertyId];
+        const property = dataset!.entity_types[entityTypeId].properties[propertyId];
 
         return (
             <div className={classes.option}>
@@ -163,7 +169,7 @@ export default function Property(
                 </div>
 
                 <Properties>
-                    <div>Density: {property.rows_count * entityType.total}%</div>
+                    <div>Density: {+((property.rows_count / entityType!.total) * 100).toFixed(2)}%</div>
                     {property.is_value_type && <div>Has values</div>}
                     {property.is_link && !property.is_inverse && <div>Has links to another collection</div>}
                     {property.is_link && property.is_inverse && <div>Has inverted links to another collection</div>}
@@ -207,7 +213,7 @@ export function PropertyLabel({datasetRef, className}: { datasetRef: DatasetRef,
 
     return (
         <PropertyPathLabels className={clsx(classes.property, className)}
-                            labels={[dataset.title, entityType.shortened_uri]}/>
+                            labels={[dataset!.title, entityType!.shortened_uri]}/>
     );
 }
 

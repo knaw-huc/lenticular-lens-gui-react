@@ -1,4 +1,10 @@
-.waiting {
+.waiting, .failed, .success, .running {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2em;
+}
+
+.waiting, .failed {
     color: #dc3545;
 
     > button {
@@ -10,10 +16,6 @@
     }
 }
 
-.success {
-    color: #28a745;
-}
-
-.running {
+.success, .running {
     color: #28a745;
 }
