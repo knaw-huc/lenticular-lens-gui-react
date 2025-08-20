@@ -1,4 +1,4 @@
-import {io} from 'socket.io-client';
+import {io, Socket} from 'socket.io-client';
 import {QueryClient} from '@tanstack/react-query';
 import {onJobUpdate} from 'queries/job.ts';
 import {resetMethods} from 'queries/methods.ts';
@@ -13,7 +13,6 @@ import {
     Linkset,
     Lens,
     Clustering,
-    UnsavedData,
     AlignmentDelete,
     AlignmentUpdate,
     ClusteringDelete,
@@ -39,28 +38,29 @@ export function setUpSocket(queryClient: QueryClient) {
     socket.on('extension_update', _ => resetMethods(queryClient));
     socket.io.on('reconnect', _ => resetDownloadsTimbuctoo(queryClient));
 
-    return () => {
-        socket.off('sparql_load_update');
-        socket.off('sparql_status_update');
-        socket.off('timbuctoo_status_update');
-
-        socket.off('sparql_update');
-        socket.off('timbuctoo_update');
-
-        socket.off('sparql_load_delete');
-        socket.off('sparql_delete');
-        socket.off('timbuctoo_delete');
-
-        socket.off('extension_update');
-        socket.io.off('reconnect');
-        socket.disconnect();
-    };
+    return socket;
 }
 
-export function setUpJobSocket(queryClient: QueryClient, jobId: string,
-                               getUnsavedData: () => UnsavedData, updateUnsavedData: (unsavedData: UnsavedData) => void) {
+export function disconnectSocket(socket: Socket) {
+    socket.off('sparql_load_update');
+    socket.off('sparql_status_update');
+    socket.off('timbuctoo_status_update');
+
+    socket.off('sparql_update');
+    socket.off('timbuctoo_update');
+
+    socket.off('sparql_load_delete');
+    socket.off('sparql_delete');
+    socket.off('timbuctoo_delete');
+
+    socket.off('extension_update');
+    socket.io.off('reconnect');
+    socket.disconnect();
+}
+
+export function setUpJobSocket(queryClient: QueryClient, jobId: string) {
     const socket = io(`${api}/${jobId}`);
-    socket.on('job_update', e => onJobUpdate(queryClient, JSON.parse(e), getUnsavedData(), updateUnsavedData));
+    socket.on('job_update', e => onJobUpdate(queryClient, JSON.parse(e)));
 
     socket.on('alignment_update', e => onAlignmentUpdate(queryClient, JSON.parse(e)));
     socket.on('clustering_update', e => onClusteringUpdate(queryClient, JSON.parse(e)));
@@ -68,20 +68,22 @@ export function setUpJobSocket(queryClient: QueryClient, jobId: string,
     socket.on('alignment_delete', e => onAlignmentDelete(queryClient, JSON.parse(e)));
     socket.on('clustering_delete', e => onClusteringDelete(queryClient, JSON.parse(e)));
 
-    socket.io.on('reconnect', _ => onReconnect(queryClient, jobId, getUnsavedData(), updateUnsavedData));
+    socket.io.on('reconnect', _ => onReconnect(queryClient, jobId));
 
-    return () => {
-        socket.off('job_update');
+    return socket;
+}
 
-        socket.off('alignment_update');
-        socket.off('clustering_update');
+export function disconnectJobSocket(socket: Socket) {
+    socket.off('job_update');
 
-        socket.off('alignment_delete');
-        socket.off('clustering_delete');
+    socket.off('alignment_update');
+    socket.off('clustering_update');
 
-        socket.io.off('reconnect');
-        socket.disconnect();
-    };
+    socket.off('alignment_delete');
+    socket.off('clustering_delete');
+
+    socket.io.off('reconnect');
+    socket.disconnect();
 }
 
 async function onSPARQLDatasetsDelete(queryClient: QueryClient, data: SPARQLDatasetUpdate) {
@@ -168,8 +170,7 @@ async function onClusteringDelete(queryClient: QueryClient, data: ClusteringDele
     return prefetchClusterings(queryClient, data.job_id);
 }
 
-async function onReconnect(queryClient: QueryClient, jobId: string, unsavedData: UnsavedData,
-                           updateUnsavedData: (unsavedData: UnsavedData) => void) {
+async function onReconnect(queryClient: QueryClient, jobId: string) {
     await onJobUpdate(queryClient, {
         job_id: jobId,
         updated_at: new Date(),
@@ -180,7 +181,7 @@ async function onReconnect(queryClient: QueryClient, jobId: string, unsavedData:
         is_linkset_specs_update: true,
         is_lens_specs_update: true,
         is_views_update: true
-    }, unsavedData, updateUnsavedData);
+    });
 
     resetLinksets(queryClient, jobId);
     resetLenses(queryClient, jobId);

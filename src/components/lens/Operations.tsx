@@ -1,14 +1,14 @@
 import {useCallback, useState} from 'react';
 import LogicTree, {FuzzyLeafComponentProps} from 'components/LogicTree.tsx';
-import useLensSpecs from 'hooks/useLensSpecs.ts';
+import useLensSpecs from 'stores/useLensSpecs.ts';
 import {useLinksets} from 'queries/linksets.ts';
 import {useLenses} from 'queries/lenses.ts';
-import useLinksetSpecs from 'hooks/useLinksetSpecs.ts';
+import useLinksetSpecs from 'stores/useLinksetSpecs.ts';
 import {lensOptions} from 'utils/logicBoxOptions.ts';
 import {LensElements, LensSpec, SpecRef} from 'utils/interfaces.ts';
 import {getLinksetSpecsInLens, getRecursiveGroups, updateLensLogicBoxTypes} from 'utils/specifications.ts';
 import classes from './Operations.module.css';
-import useViews from 'hooks/useViews.ts';
+import useViews from 'stores/useViews.ts';
 
 const addLens: () => SpecRef = () => ({id: -1, type: 'linkset'});
 const allowFuzzyLogic = (elements: LensElements) =>
@@ -19,9 +19,10 @@ export default function Operations({jobId, lensSpec, isInUse}: {
     lensSpec: LensSpec,
     isInUse: boolean
 }) {
-    const {linksetSpecs} = useLinksetSpecs();
-    const {lensSpecs, update} = useLensSpecs();
-    const {updateEts} = useViews();
+    const linksetSpecs = useLinksetSpecs(state => state.linksetSpecs);
+    const lensSpecs = useLensSpecs(state => state.lensSpecs);
+    const update = useLensSpecs(state => state.update);
+    const updateEts = useViews(state => state.updateEts);
     const [useFuzzyLogic, setUseFuzzyLogic] = useState(getRecursiveGroups(lensSpec.specs, 'elements')
         .find(spec => spec.s_norm !== undefined) !== undefined);
 
@@ -63,8 +64,8 @@ function LensElement(
         onUpdateElement,
         jobId
     }: FuzzyLeafComponentProps<'elements', SpecRef> & { jobId: string }) {
-    const {linksetSpecs} = useLinksetSpecs();
-    const {lensSpecs} = useLensSpecs();
+    const linksetSpecs = useLinksetSpecs(state => state.linksetSpecs);
+    const lensSpecs = useLensSpecs(state => state.lensSpecs);
     const {data: linksets} = useLinksets(jobId);
     const {data: lenses} = useLenses(jobId);
 

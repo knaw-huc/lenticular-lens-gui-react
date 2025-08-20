@@ -5,7 +5,7 @@ import MatchingMethodConfiguration from 'components/alignment/MatchingMethodConf
 import ListMatchingConfiguration from 'components/alignment/ListMatchingConfiguration.tsx';
 import FuzzyLogicConfiguration from 'components/alignment/FuzzyLogicConfiguration.tsx';
 import SourceTargetConfiguration from 'components/alignment/SourceTargetConfiguration.tsx';
-import useLinksetSpecs from 'hooks/useLinksetSpecs.ts';
+import useLinksetSpecs from 'stores/useLinksetSpecs.ts';
 import {useMethods} from 'queries/methods.ts';
 import {defaultOptions, fuzzyOptions} from 'utils/logicBoxOptions.ts';
 import {Conditions, LinksetSpec, MatchingMethodSpec} from 'utils/interfaces.ts';
@@ -13,31 +13,31 @@ import {createNewMatchingCondition, updateMethodsLogicBoxTypes} from 'utils/spec
 import classes from './MatchingConfiguration.module.css';
 
 export default function MatchingConfiguration({linksetSpec, isInUse}: { linksetSpec: LinksetSpec, isInUse: boolean }) {
-    const {update} = useLinksetSpecs();
+    const update = useLinksetSpecs(state => state.update);
     const useFuzzyLogic = !['and', 'or'].includes(linksetSpec.methods.type);
 
-    const add = !isInUse ? useCallback(() =>
-        createNewMatchingCondition(linksetSpec.sources, linksetSpec.targets), [linksetSpec.sources, linksetSpec.targets]) : undefined;
-    const onChange = !isInUse ? useCallback((newLogicTree: any) =>
-        update(linksetSpec.id, linksetSpec => linksetSpec.methods = newLogicTree), [update]) : undefined;
-    const switchFuzzyLogic = !isInUse ? useCallback((useFuzzyLogic: boolean) =>
-        update(linksetSpec.id, linksetSpec => updateMethodsLogicBoxTypes(linksetSpec.methods, useFuzzyLogic)), [update]) : undefined;
+    const add = useCallback(() =>
+        createNewMatchingCondition(linksetSpec.sources, linksetSpec.targets), [linksetSpec.sources, linksetSpec.targets]);
+    const onChange = useCallback((newLogicTree: any) =>
+        update(linksetSpec.id, linksetSpec => linksetSpec.methods = newLogicTree), [update]);
+    const switchFuzzyLogic = useCallback((useFuzzyLogic: boolean) =>
+        update(linksetSpec.id, linksetSpec => updateMethodsLogicBoxTypes(linksetSpec.methods, useFuzzyLogic)), [update]);
 
     return (
         <LogicTree logicTree={linksetSpec.methods}
                    elementsKey="conditions"
                    LeafComponent={MatchingMethodSpecification}
-                   add={add}
-                   onChange={onChange}
+                   add={!isInUse ? add : undefined}
+                   onChange={!isInUse ? onChange : undefined}
+                   switchFuzzyLogic={!isInUse ? switchFuzzyLogic : undefined}
                    useFuzzyLogic={useFuzzyLogic}
                    allowFuzzyLogic={useFuzzyLogic}
-                   switchFuzzyLogic={switchFuzzyLogic}
                    options={useFuzzyLogic ? fuzzyOptions : defaultOptions}/>
     );
 }
 
 function MatchingMethodSpecification({isCollapsed, element, canUpdateElement, onUpdateElement, useFuzzyLogic}:
-                                         FuzzyLeafComponentProps<'conditions', MatchingMethodSpec>) {
+                                     FuzzyLeafComponentProps<'conditions', MatchingMethodSpec>) {
     const {data} = useMethods();
     const methods = data.matching_methods;
     const method = methods.get(element.method.name);
@@ -83,7 +83,7 @@ function MatchingMethodSpecification({isCollapsed, element, canUpdateElement, on
 
     return (
         <div className={classes.matchingConfiguration}>
-            {!isCollapsed && <Tabs tabs={tabs} value={tab} onTabChange={setTab} childTheme/>}
+            {!isCollapsed && <Tabs tabs={tabs} defaultValue={tab} onTabChange={setTab} childTheme/>}
 
             <SourceTargetConfiguration isSource={true} conditions={element.sources}
                                        canUpdate={canUpdateElement} onUpdate={onSourceUpdate}/>

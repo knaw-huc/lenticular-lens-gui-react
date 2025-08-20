@@ -1,15 +1,18 @@
 import {createFileRoute} from '@tanstack/react-router';
 import Specifications from 'components/shared/Specifications.tsx';
-import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
-import useLinksetSpecs from 'hooks/useLinksetSpecs.ts';
+import useEntityTypeSelections from 'stores/useEntityTypeSelections.ts';
+import useLinksetSpecs from 'stores/useLinksetSpecs.ts';
 import {useLinksets} from 'queries/linksets.ts';
 import {DataSetIcon} from 'utils/icons.tsx';
 import {isEntityTypeUsedInLinkset} from 'utils/specifications.ts';
 
 function DataSelection() {
     const {jobId} = Route.useParams();
-    const {entityTypeSelections, addNew, duplicateById, deleteById} = useEntityTypeSelections();
-    const {linksetSpecs} = useLinksetSpecs();
+    const entityTypeSelections = useEntityTypeSelections(state => state.entityTypeSelections);
+    const addNew = useEntityTypeSelections(state => state.addNew);
+    const duplicateById = useEntityTypeSelections(state => state.duplicateById);
+    const deleteById = useEntityTypeSelections(state => state.deleteById);
+    const linksetSpecs = useLinksetSpecs(state => state.linksetSpecs);
     const {data: linksets} = useLinksets(jobId);
 
     function cannotDeleteCheck(id: number) {

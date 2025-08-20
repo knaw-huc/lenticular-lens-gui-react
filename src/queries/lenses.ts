@@ -25,24 +25,6 @@ export async function prefetchLenses(queryClient: QueryClient, id: string) {
     return queryClient.prefetchQuery(getLensesQueryOptions(id));
 }
 
-export async function runLens(jobId: string, id: number, restart: boolean): Promise<'ok' | 'exists' | 'error'> {
-    const body = new FormData();
-    body.append('restart', restart.toString());
-
-    const result = await fetch(`${api}/job/${jobId}/run/lens/${id}`, {
-        method: 'POST',
-        body
-    });
-
-    if (result.ok)
-        return 'ok';
-
-    if (result.status === 400 && (await result.json()).result === 'exists')
-        return 'exists';
-
-    return 'error';
-}
-
 async function loadLenses(jobId: string): Promise<Lens[]> {
     const response = await fetch(`${api}/job/${jobId}/lenses`);
     if (!response.ok)

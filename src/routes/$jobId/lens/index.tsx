@@ -1,14 +1,17 @@
 import {createFileRoute} from '@tanstack/react-router';
 import Specifications from 'components/shared/Specifications.tsx';
-import useLensSpecs from 'hooks/useLensSpecs.ts';
-import useLinksetSpecs from 'hooks/useLinksetSpecs.ts';
+import useLensSpecs from 'stores/useLensSpecs.ts';
+import useLinksetSpecs from 'stores/useLinksetSpecs.ts';
 import {LensIcon} from 'utils/icons.tsx';
 import {getSpecsUsedInLenses} from 'utils/specifications.ts';
 
 function Lens() {
     const {jobId} = Route.useParams();
-    const {linksetSpecs} = useLinksetSpecs();
-    const {lensSpecs, addNew, duplicateById, deleteById} = useLensSpecs();
+    const linksetSpecs = useLinksetSpecs(state => state.linksetSpecs);
+    const lensSpecs = useLensSpecs(state => state.lensSpecs);
+    const addNew = useLensSpecs(state => state.addNew);
+    const duplicateById = useLensSpecs(state => state.duplicateById);
+    const deleteById = useLensSpecs(state => state.deleteById);
 
     function cannotDeleteCheck(id: number) {
         return getSpecsUsedInLenses(lensSpecs, linksetSpecs)

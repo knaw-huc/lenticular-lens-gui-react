@@ -1,4 +1,4 @@
-import {Suspense, useContext, useState} from 'react';
+import {Suspense, useState} from 'react';
 import {IconChartDots3} from '@tabler/icons-react';
 import Modal from 'components/Modal.tsx';
 import Property from 'components/Property.tsx';
@@ -6,7 +6,7 @@ import Checkbox from 'components/Checkbox.tsx';
 import {ResultItem, Results} from 'components/Results.tsx';
 import ClustersMenu from 'components/shared/ClustersMenu.tsx';
 import ClusterVisualization from 'components/shared/ClusterVisualization.tsx';
-import {FilteredClustersContext} from 'context/FilteredClustersContext.tsx';
+import useFilteredClusters from 'stores/useFilteredClusters.ts';
 import {ClustersProperties, useClusters} from 'queries/clusters.ts';
 import useInfiniteLoading from 'hooks/useInfiniteLoading.ts';
 import {Cluster} from 'utils/interfaces.ts';
@@ -14,7 +14,8 @@ import {ButtonGroup, Spinner} from 'utils/components.tsx';
 import classes from './Clusters.module.css';
 
 export default function Clusters({jobId, type, id}: { jobId: string, type: 'linkset' | 'lens', id: number }) {
-    const {filteredClusters, setFilteredClusters} = useContext(FilteredClustersContext);
+    const filteredClusters = useFilteredClusters(state => state.filteredClusters);
+    const setFilteredClusters = useFilteredClusters(state => state.setFilteredClusters);
     const [clusterProps, setClusterProps] = useState<ClustersProperties>({});
 
     return (

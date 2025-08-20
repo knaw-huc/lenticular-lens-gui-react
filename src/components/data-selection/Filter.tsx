@@ -1,13 +1,13 @@
 import {useCallback} from 'react';
 import LogicTree from 'components/LogicTree.tsx';
 import FilterCondition from 'components/shared/FilterCondition.tsx';
-import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
+import useEntityTypeSelections from 'stores/useEntityTypeSelections.ts';
 import {EntityTypeSelection} from 'utils/interfaces.ts';
 
 const addFilter = () => ({type: '', property: ['']});
 
 export default function Filter({ets, isInUse}: { ets: EntityTypeSelection, isInUse: boolean }) {
-    const {update} = useEntityTypeSelections();
+    const update = useEntityTypeSelections(state => state.update);
 
     const LeafComponent = useCallback((props: any) =>
         FilterCondition({...props, dataset: ets.dataset}), [ets.dataset]);

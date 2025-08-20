@@ -20,8 +20,7 @@ export function findId(objs: { id: number }[]): number {
         (obj.id > largestId) ? obj.id : largestId, 0) + 1;
 }
 
-export function duplicate<T extends { id: number }>(id: number, objects: T[], props: Partial<T>,
-                                                    setObjects: (objects: T[]) => void) {
+export function duplicate<T extends { id: number }>(id: number, objects: T[], props: Partial<T>): T[] {
     const index = objects.findIndex(res => res.id === id);
     const object = objects[index];
     const newObjects = [...objects];
@@ -29,20 +28,20 @@ export function duplicate<T extends { id: number }>(id: number, objects: T[], pr
         ...copy(object),
         ...props
     });
-    setObjects(newObjects);
+    return newObjects;
 }
 
 export function updater<T extends {
     id: number,
     type?: 'linkset' | 'lens'
-}>(id: number, objects: T[], updateFn: (obj: T) => void, setObjects: (objects: T[]) => void, type?: 'linkset' | 'lens') {
+}>(id: number, objects: T[], updateFn: (obj: T) => void, type?: 'linkset' | 'lens'): T[] {
     const index = objects.findIndex(res => res.id === id && (!type || type === res.type));
     const object = copy(objects[index]);
     const newObjects = [...objects];
     newObjects[index] = object;
 
     updateFn(object);
-    setObjects(newObjects);
+    return newObjects;
 }
 
 export function getRecursiveGroups<K extends string, E extends object, P extends {} = {}>(element: LogicTree<K, E, P> | E, groupName: K): LogicTree<K, E, P>[] {

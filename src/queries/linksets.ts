@@ -25,24 +25,6 @@ export async function prefetchLinksets(queryClient: QueryClient, id: string) {
     return queryClient.prefetchQuery(getLinksetsQueryOptions(id));
 }
 
-export async function runLinkset(jobId: string, id: number, restart: boolean): Promise<'ok' | 'exists' | 'error'> {
-    const body = new FormData();
-    body.append('restart', restart.toString());
-
-    const result = await fetch(`${api}/job/${jobId}/run/linkset/${id}`, {
-        method: 'POST',
-        body
-    });
-
-    if (result.ok)
-        return 'ok';
-
-    if (result.status === 400 && (await result.json()).result === 'exists')
-        return 'exists';
-
-    return 'error';
-}
-
 async function loadLinksets(jobId: string): Promise<Linkset[]> {
     const response = await fetch(`${api}/job/${jobId}/linksets`);
     if (!response.ok)

@@ -6,9 +6,9 @@ import DatasetSelection from 'components/data-selection/DatasetSelection.tsx';
 import Filter from 'components/data-selection/Filter.tsx';
 import Sample from 'components/data-selection/Sample.tsx';
 import EntityTypeSelectionMenu from 'components/data-selection/EntityTypeSelectionMenu.tsx';
-import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
-import useLinksetSpecs from 'hooks/useLinksetSpecs.ts';
-import {fetchJob} from 'queries/job.ts';
+import useEntityTypeSelections from 'stores/useEntityTypeSelections.ts';
+import useLinksetSpecs from 'stores/useLinksetSpecs.ts';
+import {fetchJob, useJob} from 'queries/job.ts';
 import {useLinksets} from 'queries/linksets.ts';
 import {DataSetIcon} from 'utils/icons.tsx';
 import {EntityTypeSelection} from 'utils/interfaces.ts';
@@ -17,11 +17,18 @@ import {isEntityTypeUsedInLinkset} from 'utils/specifications.ts';
 
 function DataSelection() {
     const {jobId, id} = Route.useParams();
-    const {entityTypeSelections} = useEntityTypeSelections();
-    const {linksetSpecs} = useLinksetSpecs();
+
+    const {data: job} = useJob(jobId);
+    const entityTypeSelections = useEntityTypeSelections(state => state.entityTypeSelections);
+    const linksetSpecs = useLinksetSpecs(state => state.linksetSpecs);
     const {data: linksets} = useLinksets(jobId);
+
     const ets = entityTypeSelections.find(ets => ets.id === parseInt(id))!;
-    const hasDataset = ets.dataset !== null;
+    const persistedEts = job.entity_type_selections.find(ets => ets.id === parseInt(id));
+
+    const hasDataset = ets.dataset?.entity_type_id;
+    const hasPersistedDataset = persistedEts?.dataset?.entity_type_id;
+
     const isInUse = isEntityTypeUsedInLinkset(ets.id, linksetSpecs, linksets);
 
     return (
@@ -49,7 +56,7 @@ function DataSelection() {
                     'sample': {
                         title: 'Sample',
                         content: <Sample jobId={jobId} ets={ets}/>,
-                        disabled: !hasDataset
+                        disabled: !hasPersistedDataset
                     }
                 }}/>
             </Container>
@@ -58,7 +65,7 @@ function DataSelection() {
 }
 
 function EntityTypeSelectionInfo({ets}: { ets: EntityTypeSelection }) {
-    const {update} = useEntityTypeSelections();
+    const update = useEntityTypeSelections(state => state.update);
 
     return (
         <Info metadata={ets} withUpdate={metadata => update(ets.id, ets => Object.assign(ets, metadata))}/>

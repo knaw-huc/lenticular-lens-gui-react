@@ -23,7 +23,7 @@
 .link {
     display: grid;
     flex-grow: 1;
-    grid-template-columns: min-content repeat(2, auto) min-content;
+    grid-template-columns: min-content repeat(2, minmax(0, 1fr)) min-content;
     grid-template-rows: max-content auto;
     gap: 0.7em;
     grid-template-areas:
@@ -72,6 +72,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5em;
+    overflow-wrap: anywhere;
 
     .title {
         font-weight: 700;

@@ -86,10 +86,11 @@ function FilterConfigurationInputTypes({filter, condition, onUpdateElement}: {
                     {filter.help_text && <HelpText>{filter.help_text}</HelpText>}
                 </LabelGroup>}
 
-            {filter.type === 'date' && <LabelGroup isForm label="Date format">
-                <input type="text" placeholder="YYYY-MM-DD" value={condition.value}
-                       onChange={e => onUpdateElement(condition => condition.format = e.target.value)}/>
-            </LabelGroup>}
+            {filter.type === 'date' &&
+                <LabelGroup isForm label="Date format">
+                    <input type="text" placeholder="YYYY-MM-DD" value={condition.value}
+                           onChange={e => onUpdateElement(condition => condition.format = e.target.value)}/>
+                </LabelGroup>}
         </>
     );
 }

@@ -3,6 +3,7 @@
     flex-direction: column;
     gap: 0.5em;
     margin: 1em;
+    width: 20em;
     max-width: 20em;
 
     textarea {

@@ -1,11 +1,11 @@
-import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
+import useEntityTypeSelections from 'stores/useEntityTypeSelections.ts';
 
 export default function EntityTypeSelectionSelection({value, onUpdate, disallowed = []}: {
     value: number;
     onUpdate: (value: number) => void;
     disallowed?: number[];
 }) {
-    const {entityTypeSelections} = useEntityTypeSelections();
+    const entityTypeSelections = useEntityTypeSelections(state => state.entityTypeSelections);
     const allowedEntityTypeSelections = entityTypeSelections.filter(ets => !disallowed.includes(ets.id));
 
     return (

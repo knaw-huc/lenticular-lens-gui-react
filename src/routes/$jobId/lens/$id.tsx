@@ -8,7 +8,7 @@ import LensStatusMenu from 'components/lens/LensStatusMenu.tsx';
 import Export from 'components/shared/Export.tsx';
 import Info from 'components/shared/Info.tsx';
 import LensMenu from 'components/lens/LensMenu.tsx';
-import useLensSpecs from 'hooks/useLensSpecs.ts';
+import useLensSpecs from 'stores/useLensSpecs.ts';
 import {fetchJob} from 'queries/job.ts';
 import {useLens} from 'queries/lenses.ts';
 import {LensIcon} from 'utils/icons.tsx';
@@ -17,7 +17,7 @@ import {LensSpec} from 'utils/interfaces.ts';
 
 function Lens() {
     const {jobId, id} = Route.useParams();
-    const {lensSpecs} = useLensSpecs();
+    const lensSpecs = useLensSpecs(state => state.lensSpecs);
     const lensSpec = lensSpecs.find(lensSpec => lensSpec.id === parseInt(id))!;
     const lens = useLens(jobId, lensSpec.id);
     const hasLens = lens !== undefined;
@@ -66,7 +66,7 @@ function Lens() {
 }
 
 function LensSpecInfo({lensSpec}: { lensSpec: LensSpec }) {
-    const {update} = useLensSpecs();
+    const update = useLensSpecs(state => state.update);
 
     return (
         <Info metadata={lensSpec}

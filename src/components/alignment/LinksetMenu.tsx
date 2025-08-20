@@ -1,9 +1,11 @@
 import {IconAutomation, IconDeviceFloppy, IconProgress} from '@tabler/icons-react';
 import Checkbox from 'components/Checkbox.tsx';
 import useJob from 'hooks/useJob.ts';
-import useLinksetSpecs from 'hooks/useLinksetSpecs.ts';
-import {runLinkset, useLinksets} from 'queries/linksets.ts';
-import {runClustering, useClusterings} from 'queries/clusterings.ts';
+import useLinksetSpecs from 'stores/useLinksetSpecs.ts';
+import {runSpec} from 'queries/links.ts';
+import {runClustering} from 'queries/clusters.ts';
+import {useLinksets} from 'queries/linksets.ts';
+import {useClusterings} from 'queries/clusterings.ts';
 import {useUpdateJob} from 'queries/job.ts';
 import {ButtonGroup} from 'utils/components.tsx';
 import {LinksetSpec} from 'utils/interfaces.ts';
@@ -11,7 +13,7 @@ import {LinksetSpec} from 'utils/interfaces.ts';
 export default function LinksetMenu({jobId, linksetSpec}: { jobId: string, linksetSpec: LinksetSpec }) {
     const {hasChanges} = useJob(jobId);
     const mutation = useUpdateJob(jobId);
-    const {update} = useLinksetSpecs();
+    const update = useLinksetSpecs(state => state.update);
     const {data: linksets} = useLinksets(jobId);
     const {data: clusterings} = useClusterings(jobId);
 
@@ -24,7 +26,7 @@ export default function LinksetMenu({jobId, linksetSpec}: { jobId: string, links
 
     async function saveAndRun(force: boolean = false) {
         save();
-        const result = await runLinkset(jobId, linksetSpec.id, force);
+        const result = await runSpec(jobId, 'linkset', linksetSpec.id, force);
         if (result === 'exists' && confirm('This linkset already exists.\nDo you want to overwrite it with the current configuration?'))
             saveAndRun(true);
     }

@@ -1,4 +1,4 @@
-import {Suspense, useContext, useState} from 'react';
+import {Suspense, useState} from 'react';
 import {IconPencil, IconCheck, IconX, IconQuestionMark} from '@tabler/icons-react';
 import Uri from 'components/Uri.tsx';
 import Dropdown from 'components/Dropdown.tsx';
@@ -6,7 +6,7 @@ import Property from 'components/Property.tsx';
 import {ResultItem, Results} from 'components/Results.tsx';
 import LinksMotivation from 'components/shared/LinksMotivation.tsx';
 import LinksMenu from 'components/shared/LinksMenu.tsx';
-import {FilteredClustersContext} from 'context/FilteredClustersContext.tsx';
+import useFilteredClusters from 'stores/useFilteredClusters.ts';
 import {useLinks, LinksProperties, useValidateLink, useMotivateLink} from 'queries/links.ts';
 import useInfiniteLoading from 'hooks/useInfiniteLoading.ts';
 import {Link, ValidationState} from 'utils/interfaces.ts';
@@ -14,7 +14,7 @@ import {LabelGroup, Spinner} from 'utils/components.tsx';
 import classes from './Links.module.css';
 
 export default function Links({jobId, type, id}: { jobId: string, type: 'linkset' | 'lens', id: number }) {
-    const {filteredClusters} = useContext(FilteredClustersContext);
+    const filteredClusters = useFilteredClusters(state => state.filteredClusters);
     const [linksProps, setLinksProps] = useState<LinksProperties>({
         accepted: false,
         rejected: false,

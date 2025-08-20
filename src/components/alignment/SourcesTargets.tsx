@@ -1,16 +1,16 @@
 import {ResultItem, Results} from 'components/Results.tsx';
 import EntityTypeSelectionSelection from 'components/EntityTypeSelectionSelection.tsx';
-import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
-import useLinksetSpecs from 'hooks/useLinksetSpecs.ts';
-import useViews from 'hooks/useViews.ts';
+import useEntityTypeSelections from 'stores/useEntityTypeSelections.ts';
+import useLinksetSpecs from 'stores/useLinksetSpecs.ts';
+import useViews from 'stores/useViews.ts';
 import {getRecursiveElements} from 'utils/specifications.ts';
 import {LinksetSpec} from 'utils/interfaces.ts';
 import {DataSetIcon} from 'utils/icons.tsx';
 import classes from './SourcesTargets.module.css';
 
 export default function SourcesTargets({linksetSpec, isInUse}: { linksetSpec: LinksetSpec, isInUse: boolean }) {
-    const {update} = useLinksetSpecs();
-    const {updateEts} = useViews();
+    const update = useLinksetSpecs(state => state.update);
+    const updateEts = useViews(state => state.updateEts);
 
     function getAdd(isSource: boolean) {
         return () => !isInUse && update(linksetSpec.id, linksetSpec =>
@@ -98,7 +98,7 @@ function SourceTarget({id, ids, index, update, remove}: {
     update: (index: number, etsId: number) => void,
     remove: (index: number) => void
 }) {
-    const {entityTypeSelections} = useEntityTypeSelections();
+    const entityTypeSelections = useEntityTypeSelections(state => state.entityTypeSelections);
     const ets = entityTypeSelections.find(ets => ets.id === id);
 
     return (

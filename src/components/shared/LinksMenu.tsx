@@ -12,7 +12,7 @@ import Properties from 'components/Properties.tsx';
 import RangeFilter from 'components/RangeFilter.tsx';
 import FilterCondition from 'components/shared/FilterCondition.tsx';
 import LinksMotivation from 'components/shared/LinksMotivation.tsx';
-import useViews from 'hooks/useViews.ts';
+import useViews from 'stores/useViews.ts';
 import {useUpdateJob} from 'queries/job.ts';
 import {
     LinksProperties,
@@ -147,7 +147,8 @@ function Filters({jobId, type, id, props}: {
     id: number,
     props: LinksProps
 }) {
-    const {views, update} = useViews();
+    const views = useViews(state => state.views);
+    const update = useViews(state => state.update);
     const resetLinks = useResetLinks(jobId, type, id, props);
     const mutation = useUpdateJob(jobId);
     const view = views.find(res => res.type === type && res.id === id);

@@ -30,13 +30,16 @@ export function useResetSamples(jobId: string, etsId: number, invert: boolean = 
 }
 
 async function loadSamples(jobId: string, etsId: number, invert: boolean, page: number): Promise<Sample[]> {
-    const params = new URLSearchParams({
-        invert: invert.toString(),
-        limit: pageSize.toString(),
-        offset: (pageSize * page).toString()
+    const data = new FormData();
+    data.append('invert', invert.toString());
+    data.append('limit', pageSize.toString());
+    data.append('offset', (pageSize * page).toString());
+
+    const response = await fetch(`${api}/job/${jobId}/${etsId}`, {
+        method: 'POST',
+        body: data
     });
 
-    const response = await fetch(`${api}/job/${jobId}/entity_type_selection/${etsId}?${params.toString()}`);
     if (!response.ok)
         throw new Error('Unable to fetch samples!');
 
@@ -48,7 +51,10 @@ async function loadSamples(jobId: string, etsId: number, invert: boolean, page: 
 }
 
 async function loadSampleTotal(jobId: string, etsId: number): Promise<number> {
-    const response = await fetch(`${api}/job/${jobId}/entity_type_selection_total/${etsId}`);
+    const response = await fetch(`${api}/job/${jobId}/${etsId}/totals`, {
+        method: 'POST'
+    });
+
     if (!response.ok)
         throw new Error('Unable to fetch sample total!');
 

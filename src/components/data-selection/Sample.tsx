@@ -9,7 +9,7 @@ import {useUpdateJob} from 'queries/job.ts';
 import {useResetSamples, useSamples, useSampleTotal} from 'queries/sample.ts';
 import useJob from 'hooks/useJob.ts';
 import useInfiniteLoading from 'hooks/useInfiniteLoading.ts';
-import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
+import useEntityTypeSelections from 'stores/useEntityTypeSelections.ts';
 import useDataset from 'hooks/useDataset.ts';
 import {Spinner, StickyMenu, ButtonGroup, LabelGroup} from 'utils/components.tsx';
 import {EntityTypeSelection, Sample as SampleData} from 'utils/interfaces.ts';
@@ -37,8 +37,8 @@ function Menu({jobId, ets, invert, setInvert}: {
 }) {
     const {hasChanges} = useJob(jobId);
     const mutation = useUpdateJob(jobId);
-    const {update} = useEntityTypeSelections();
-    const {entityType} = useDataset(ets.dataset!)!;
+    const update = useEntityTypeSelections(state => state.update);
+    const {entityType} = useDataset(ets.dataset!);
     const {resetSamples} = useResetSamples(jobId, ets.id, invert);
     const [showPropConfig, setShowPropConfig] = useState(false);
 
@@ -58,7 +58,7 @@ function Menu({jobId, ets, invert, setInvert}: {
 
                     {' / '}
 
-                    {entityType.total.toLocaleString('en')}
+                    {entityType!.total.toLocaleString('en')}
                 </LabelGroup>
 
                 <ButtonGroup>

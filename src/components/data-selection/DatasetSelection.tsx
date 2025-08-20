@@ -9,22 +9,14 @@ import {datasetRefIsTimbuctoo} from 'queries/datasets_timbuctoo.ts';
 import {datasetRefIsSPARQL} from 'queries/datasets_sparql.ts';
 import useDataset from 'hooks/useDataset.ts';
 import useDatasets from 'hooks/useDatasets.ts';
-import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
+import useEntityTypeSelections from 'stores/useEntityTypeSelections.ts';
 import {ButtonGroup, Form, LabelGroup, Spinner} from 'utils/components.tsx';
 import {DatasetRef, EntityTypeSelection, SPARQLDatasetRef, TimbuctooDatasetRef} from 'utils/interfaces.ts';
 import classes from './DatasetSelection.module.css';
 
 export default function DatasetSelection({ets, isInUse}: { ets: EntityTypeSelection, isInUse: boolean }) {
-    const {update} = useEntityTypeSelections();
-    if (!ets.dataset)
-        updateDatasetRef({
-            type: 'timbuctoo',
-            graphql_endpoint: 'https://repository.goldenagents.org/v5/graphql',
-            timbuctoo_id: '',
-            entity_type_id: ''
-        } as TimbuctooDatasetRef);
-
-    const datasetRef = ets.dataset!;
+    const update = useEntityTypeSelections(state => state.update);
+    const datasetRef = ets.dataset;
 
     function updateDatasetRef(datasetRef: DatasetRef) {
         !isInUse && update(ets.id, entityTypeSelection => entityTypeSelection.dataset = datasetRef);
@@ -59,28 +51,30 @@ export default function DatasetSelection({ets, isInUse}: { ets: EntityTypeSelect
         <div className={classes.dataset}>
             <Form isDisabled={isInUse}>
                 <DataSourceSelection datasetRef={datasetRef} updateDataSource={updateDataSource}/>
-                <DataSourceSelectionConfiguration datasetRef={datasetRef} updateDatasetRef={updateDatasetRefInline}/>
-                <DataSelected datasetRef={datasetRef}/>
+                {datasetRef && <>
+                    <DataSourceSelectionConfiguration datasetRef={datasetRef} updateDatasetRef={updateDatasetRefInline}/>
+                    <DataSelected datasetRef={datasetRef}/>
+                </>}
             </Form>
 
-            <DataSelection datasetRef={datasetRef} updateDatasetRef={updateDatasetRef} isInUse={isInUse}/>
+            {datasetRef && <DataSelection datasetRef={datasetRef} updateDatasetRef={updateDatasetRef} isInUse={isInUse}/>}
         </div>
     );
 }
 
 function DataSourceSelection({datasetRef, updateDataSource}: {
-    datasetRef: DatasetRef,
+    datasetRef: DatasetRef | null,
     updateDataSource: (type: 'timbuctoo' | 'sparql') => void
 }) {
     return (
         <LabelGroup inline={true} label="Data source" className={classes.type}>
             <ButtonGroup>
-                <Checkbox asButton checked={datasetRef.type === 'timbuctoo'}
+                <Checkbox asButton checked={datasetRef?.type === 'timbuctoo'}
                           onCheckedChange={_ => updateDataSource('timbuctoo')}>
                     Timbuctoo
                 </Checkbox>
 
-                <Checkbox asButton checked={datasetRef.type === 'sparql'}
+                <Checkbox asButton checked={datasetRef?.type === 'sparql'}
                           onCheckedChange={_ => updateDataSource('sparql')}>
                     SPARQL
                 </Checkbox>

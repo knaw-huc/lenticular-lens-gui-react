@@ -19,7 +19,7 @@ export function useJobs() {
 }
 
 async function loadJobs(): Promise<JobMetadata[]> {
-    const response = await fetch(`${api}/job/list`);
+    const response = await fetch(`${api}/job`);
     if (!response.ok)
         throw new Error('Unable to fetch all available jobs!');
 

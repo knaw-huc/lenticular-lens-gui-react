@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import Property from 'components/Property.tsx';
 import Transformers from 'components/alignment/Transformers.tsx';
-import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
+import useEntityTypeSelections from 'stores/useEntityTypeSelections.ts';
 import {AppliedTransformer, Conditions, PropertyCondition} from 'utils/interfaces.ts';
 import classes from './SourceTargetConfiguration.module.css';
 
@@ -34,7 +34,7 @@ function PropertiesConfiguration({properties, canUpdate, onUpdate, addListTransf
     onUpdate: (properties: { [ets: number]: PropertyCondition[] }) => void,
     addListTransformer: () => void
 }) {
-    const {entityTypeSelections} = useEntityTypeSelections();
+    const entityTypeSelections = useEntityTypeSelections(state => state.entityTypeSelections);
     const props = Object.entries(properties).flatMap(([ets, propConditions]) =>
         propConditions.map((propertyCondition, idx) => [
             ets, propConditions.length, propertyCondition, idx

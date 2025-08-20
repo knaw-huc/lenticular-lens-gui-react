@@ -27,6 +27,7 @@
       "context/*": ["./src/context/*"],
       "hooks/*": ["./src/hooks/*"],
       "queries/*": ["./src/queries/*"],
+      "stores/*": ["./src/stores/*"],
       "utils/*": ["./src/utils/*"]
     }
   },

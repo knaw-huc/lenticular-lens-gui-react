@@ -1,9 +1,10 @@
-import {ReactNode, useEffect, useState} from 'react';
+import {ReactNode, Suspense, useEffect, useState} from 'react';
 import * as RadixTabs from '@radix-ui/react-tabs';
 import clsx from 'clsx';
 import classes from './Tabs.module.css';
+import {Spinner} from 'utils/components.tsx';
 
-export default function Tabs({tabs, childTheme = false, value, onTabChange}: {
+export default function Tabs({tabs, childTheme = false, defaultValue, onTabChange}: {
     tabs: {
         [key: string]: {
             title: ReactNode,
@@ -12,17 +13,18 @@ export default function Tabs({tabs, childTheme = false, value, onTabChange}: {
         }
     },
     childTheme?: boolean,
-    value?: string,
+    defaultValue?: string,
     onTabChange?: (activeTab: string) => void
 }) {
-    const [activeTab, setActiveTab] = useState(value || Object.keys(tabs)[0]);
+    const tabEntries = Object.entries(tabs);
+    const [activeTab, setActiveTab] = useState(defaultValue || Object.keys(tabs)[0]);
 
     function onValueChange(tabKey: string) {
         setActiveTab(tabKey);
         if (onTabChange)
             onTabChange(tabKey);
         else
-            window.location.hash = tabKey;
+            history.replaceState(null, '', `#${tabKey}`);
     }
 
     useEffect(() => {
@@ -38,29 +40,46 @@ export default function Tabs({tabs, childTheme = false, value, onTabChange}: {
 
             return () => window.removeEventListener('hashchange', setActiveTabFromHash);
         }
-    }, []);
+    }, [tabs, onTabChange]);
 
     return (
         <RadixTabs.Root className={clsx(classes.root, childTheme && classes.child)}
                         value={activeTab} onValueChange={onValueChange}>
             <RadixTabs.List className={classes.list}>
-                {Object.keys(tabs).map(tabKey =>
-                    <RadixTabs.Trigger key={tabKey} value={tabKey}
-                                       className={classes.tab} disabled={tabs[tabKey].disabled}>
-                        {!onTabChange && !tabs[tabKey].disabled && <a href={`#${tabKey}`}>
-                            {tabs[tabKey].title}
-                        </a>}
-                        {(onTabChange || tabs[tabKey].disabled) && tabs[tabKey].title}
-                    </RadixTabs.Trigger>
-                )}
+                {tabEntries.map(([tabKey, tab]) =>
+                    <TabTrigger key={`trigger_${tabKey}`} id={tabKey} title={tab.title}
+                                disabled={tab.disabled} onTabChange={onTabChange}/>)}
             </RadixTabs.List>
 
-            {Object.keys(tabs).map(tabKey =>
-                <RadixTabs.Content key={tabKey} value={tabKey}
-                                   className={classes.tabContent}>
-                    {tabs[tabKey].content}
-                </RadixTabs.Content>
-            )}
+            {tabEntries.map(([tabKey, tab]) =>
+                <TabContent key={`content_${tabKey}`} id={tabKey} content={tab.content}
+                            isActive={activeTab === tabKey}/>)}
         </RadixTabs.Root>
+    );
+}
+
+function TabTrigger({id, title, disabled, onTabChange}: {
+    id: string,
+    title: ReactNode,
+    disabled?: boolean,
+    onTabChange?: (activeTab: string) => void
+}) {
+    return (
+        <RadixTabs.Trigger value={id} className={classes.tab} disabled={disabled}>
+            {!onTabChange && !disabled && <a href={`#${id}`}>
+                {title}
+            </a>}
+            {(onTabChange || disabled) && title}
+        </RadixTabs.Trigger>
+    );
+}
+
+function TabContent({id, content, isActive}: { id: string, content: ReactNode, isActive: boolean }) {
+    return (
+        <RadixTabs.Content value={id} className={classes.tabContent}>
+            <Suspense fallback={<Spinner/>}>
+                {isActive && content}
+            </Suspense>
+        </RadixTabs.Content>
     );
 }

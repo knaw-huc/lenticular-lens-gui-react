@@ -20,14 +20,6 @@ export async function prefetchClusterings(queryClient: QueryClient, id: string) 
     return queryClient.prefetchQuery(getClusteringsQueryOptions(id));
 }
 
-export async function runClustering(jobId: string, type: 'linkset' | 'lens', id: number): Promise<boolean> {
-    const result = await fetch(`${api}/job/${jobId}/run_clustering/${type}/${id}`, {
-        method: 'POST'
-    });
-
-    return result.ok;
-}
-
 async function loadClusterings(jobId: string): Promise<Clustering[]> {
     const response = await fetch(`${api}/job/${jobId}/clusterings`);
     if (!response.ok)

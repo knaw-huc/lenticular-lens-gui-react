@@ -3,7 +3,7 @@ import Slider from 'components/Slider.tsx';
 import TagsInput from 'components/TagsInput.tsx';
 import Properties from 'components/Properties.tsx';
 import EntityTypeSelectionSelection from 'components/EntityTypeSelectionSelection.tsx';
-import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
+import useEntityTypeSelections from 'stores/useEntityTypeSelections.ts';
 import {LabelGroup} from 'utils/components.tsx';
 import {
     ConfigItem,
@@ -130,7 +130,7 @@ function PropertiesField({entityTypeSelection, value, onUpdate}: {
     value: string[][],
     onUpdate: (value: string[][]) => void
 }) {
-    const {entityTypeSelections} = useEntityTypeSelections();
+    const entityTypeSelections = useEntityTypeSelections(state => state.entityTypeSelections);
     const ets = entityTypeSelections.find(ets => ets.id === entityTypeSelection);
 
     return ets ? <Properties properties={value} datasetRef={ets.dataset!} onChange={onUpdate}/> : undefined;

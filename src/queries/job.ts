@@ -1,11 +1,11 @@
 import {QueryClient, queryOptions, useMutation, useQueryClient, useSuspenseQuery} from '@tanstack/react-query';
-import useEntityTypeSelections from 'hooks/useEntityTypeSelections.ts';
-import useLinksetSpecs from 'hooks/useLinksetSpecs.ts';
-import useLensSpecs from 'hooks/useLensSpecs.ts';
-import useViews from 'hooks/useViews.ts';
+import useEntityTypeSelections from 'stores/useEntityTypeSelections.ts';
+import useLinksetSpecs from 'stores/useLinksetSpecs.ts';
+import useLensSpecs from 'stores/useLensSpecs.ts';
+import useViews from 'stores/useViews.ts';
 import {api} from 'utils/config.ts';
 import {mergeSpecs} from 'utils/specifications.ts';
-import {Job, JobUpdate, JobUpdateData, UnsavedData} from 'utils/interfaces.ts';
+import {Job, JobUpdate, JobUpdateData} from 'utils/interfaces.ts';
 
 // TODO: socket informs about updates, so only stale after job change or new window?
 // TODO: on fetch always compare against local changes?
@@ -40,10 +40,10 @@ export function useCreateJob() {
 export function useUpdateJob(id: string) {
     const queryClient = useQueryClient();
     const {data: job} = useJob(id);
-    const {entityTypeSelections} = useEntityTypeSelections();
-    const {linksetSpecs} = useLinksetSpecs();
-    const {lensSpecs} = useLensSpecs();
-    const {views} = useViews();
+    const entityTypeSelections = useEntityTypeSelections(state => state.entityTypeSelections);
+    const linksetSpecs = useLinksetSpecs(state => state.linksetSpecs);
+    const lensSpecs = useLensSpecs(state => state.lensSpecs);
+    const views = useViews(state => state.views);
 
     return useMutation({
         mutationFn: () => updateJob({
@@ -95,45 +95,47 @@ export function useDeleteJob(id: string) {
     });
 }
 
-export async function onJobUpdate(queryClient: QueryClient, data: JobUpdate, unsavedData: UnsavedData,
-                                  updateUnsavedData: (unsavedData: UnsavedData) => void): Promise<void> {
+export async function onJobUpdate(queryClient: QueryClient, data: JobUpdate): Promise<void> {
     const prevJob = queryClient.getQueryData<Job>(['job', data.job_id]);
     if (!prevJob || prevJob.updated_at >= data.updated_at)
         return;
 
     await queryClient.cancelQueries({queryKey: ['job', data.job_id]});
 
+    const unsavedEntityTypeSelections = useEntityTypeSelections.getState().entityTypeSelections;
+    const unsavedLinksetSpecs = useLinksetSpecs.getState().linksetSpecs;
+    const unsavedLensSpecs = useLensSpecs.getState().lensSpecs;
+    const unsavedViews = useViews.getState().views;
+
     const hasUnsavedEntityTypeSelections =
-        JSON.stringify(unsavedData.entityTypeSelections) !== JSON.stringify(prevJob.entity_type_selections);
-    const hasUnsavedLinksetSpecs = JSON.stringify(unsavedData.linksetSpecs) !== JSON.stringify(prevJob.linkset_specs);
-    const hasUnsavedLensSpecs = JSON.stringify(unsavedData.lensSpecs) !== JSON.stringify(prevJob.lens_specs);
-    const hasUnsavedViews = JSON.stringify(unsavedData.views) !== JSON.stringify(prevJob.views);
+        JSON.stringify(unsavedEntityTypeSelections) !== JSON.stringify(prevJob.entity_type_selections);
+    const hasUnsavedLinksetSpecs = JSON.stringify(unsavedLinksetSpecs) !== JSON.stringify(prevJob.linkset_specs);
+    const hasUnsavedLensSpecs = JSON.stringify(unsavedLensSpecs) !== JSON.stringify(prevJob.lens_specs);
+    const hasUnsavedViews = JSON.stringify(unsavedViews) !== JSON.stringify(prevJob.views);
 
     await queryClient.refetchQueries({queryKey: ['job', data.job_id]});
     const newJob = queryClient.getQueryData<Job>(['job', data.job_id]);
     if (newJob) {
         const entityTypeSelections = mergeSpecs(
             data.is_entity_type_selections_update, hasUnsavedEntityTypeSelections, prevJob.entity_type_selections,
-            newJob.entity_type_selections, unsavedData.entityTypeSelections);
+            newJob.entity_type_selections, unsavedEntityTypeSelections);
 
         const linksetSpecs = mergeSpecs(
             data.is_linkset_specs_update, hasUnsavedLinksetSpecs, prevJob.linkset_specs,
-            newJob.linkset_specs, unsavedData.linksetSpecs);
+            newJob.linkset_specs, unsavedLinksetSpecs);
 
         const lensSpecs = mergeSpecs(
             data.is_lens_specs_update, hasUnsavedLensSpecs, prevJob.lens_specs,
-            newJob.lens_specs, unsavedData.lensSpecs);
+            newJob.lens_specs, unsavedLensSpecs);
 
         const views = mergeSpecs(
             data.is_views_update, hasUnsavedViews, prevJob.views,
-            newJob.views, unsavedData.views);
+            newJob.views, unsavedViews);
 
-        updateUnsavedData({
-            entityTypeSelections,
-            views,
-            linksetSpecs,
-            lensSpecs
-        });
+        useEntityTypeSelections.getState().updateEntityTypeSelections(entityTypeSelections);
+        useLinksetSpecs.getState().updateLinksetSpecs(linksetSpecs);
+        useLensSpecs.getState().updateLensSpecs(lensSpecs);
+        useViews.getState().updateViews(views);
     }
 }
 
@@ -159,7 +161,7 @@ async function createJob(title: string, description: string, link?: string): Pro
     if (link)
         formData.append('job_link', link);
 
-    const response = await fetch(`${api}/job/create`, {
+    const response = await fetch(`${api}/job`, {
         method: 'POST',
         body: formData
     });
@@ -171,9 +173,9 @@ async function createJob(title: string, description: string, link?: string): Pro
 }
 
 async function updateJob(job: JobUpdateData): Promise<void> {
-    const response = await fetch(`${api}/job/update`, {
+    const response = await fetch(`${api}/job/${job.job_id}`, {
         headers: {'Content-Type': 'application/json'},
-        method: 'POST',
+        method: 'PUT',
         body: JSON.stringify(job)
     });
 

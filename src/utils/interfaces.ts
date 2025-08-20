@@ -1,13 +1,5 @@
-import {QueryClient} from '@tanstack/react-query';
-
 export type PropertyPath = string[];
 export type ValidationState = 'accepted' | 'rejected' | 'uncertain' | 'unchecked' | 'disputed';
-
-export interface RootContext {
-    lastActiveJob: BasicJobMetadata | null;
-    setLastActiveJob: (activeJob: Job | null) => void;
-    authenticate: (callback: (userInfo: UserInfo | null, isAuthEnabled: boolean) => void) => Promise<void>;
-}
 
 export interface BasicJobMetadata {
     id: string;
@@ -18,10 +10,6 @@ export interface UserInfo {
     sub: string;
     email: string;
     nickname: string;
-}
-
-export interface RouterContext extends RootContext {
-    queryClient: QueryClient;
 }
 
 export interface Methods {
@@ -525,13 +513,6 @@ export interface Clustering extends Processing {
     largest_count: number;
     smallest_size: number;
     largest_size: number;
-}
-
-export interface UnsavedData {
-    entityTypeSelections: EntityTypeSelection[];
-    linksetSpecs: LinksetSpec[];
-    lensSpecs: LensSpec[];
-    views: View[];
 }
 
 export interface JobUpdate {

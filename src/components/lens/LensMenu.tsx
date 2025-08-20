@@ -1,7 +1,9 @@
 import {IconAutomation, IconDeviceFloppy} from '@tabler/icons-react';
 import useJob from 'hooks/useJob.ts';
-import {runLens, useLenses} from 'queries/lenses.ts';
-import {runClustering, useClusterings} from 'queries/clusterings.ts';
+import {runSpec} from 'queries/links.ts';
+import {runClustering} from 'queries/clusters.ts';
+import {useLenses} from 'queries/lenses.ts';
+import {useClusterings} from 'queries/clusterings.ts';
 import {useUpdateJob} from 'queries/job.ts';
 import {LensSpec} from 'utils/interfaces.ts';
 import {ButtonGroup} from 'utils/components.tsx';
@@ -17,7 +19,7 @@ export default function LensMenu({jobId, lensSpec}: { jobId: string, lensSpec: L
 
     async function saveAndRun(force: boolean = false) {
         save();
-        const result = await runLens(jobId, lensSpec.id, force);
+        const result = await runSpec(jobId, 'lens', lensSpec.id, force);
         if (result === 'exists' && confirm('This lens already exists.\nDo you want to overwrite it with the current configuration?'))
             saveAndRun(true);
     }
