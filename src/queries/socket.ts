@@ -2,6 +2,7 @@ import {io, Socket} from 'socket.io-client';
 import {QueryClient} from '@tanstack/react-query';
 import {onJobUpdate} from 'queries/job.ts';
 import {resetMethods} from 'queries/methods.ts';
+import {resetMapping} from 'queries/mapping.ts';
 import {updateEntitiesTimbuctoo} from 'queries/datasets_timbuctoo.ts';
 import {resetDatasetsSPARQL, updateDatasetsSPARQL, updateEntitiesSPARQL} from 'queries/datasets_sparql.ts';
 import {resetDownloadsTimbuctoo, updateDownloadTimbuctoo} from 'queries/downloads_timbuctoo.ts';
@@ -36,6 +37,8 @@ export function setUpSocket(queryClient: QueryClient) {
     socket.on('timbuctoo_delete', _ => resetDownloadsTimbuctoo(queryClient));
 
     socket.on('extension_update', _ => resetMethods(queryClient));
+    socket.on('mapping_update', e => onMappingUpdate(queryClient, JSON.parse(e)));
+
     socket.io.on('reconnect', _ => resetDownloadsTimbuctoo(queryClient));
 
     return socket;
@@ -88,6 +91,10 @@ export function disconnectJobSocket(socket: Socket) {
 
 async function onSPARQLDatasetsDelete(queryClient: QueryClient, data: SPARQLDatasetUpdate) {
     return resetDatasetsSPARQL(queryClient, data.sparql_endpoint);
+}
+
+async function onMappingUpdate(queryClient: QueryClient, data: { mapping_id: string }) {
+    return resetMapping(queryClient, data.mapping_id);
 }
 
 async function onAlignmentUpdate(queryClient: QueryClient, data: AlignmentUpdate) {

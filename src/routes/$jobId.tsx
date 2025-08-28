@@ -6,6 +6,7 @@ import {prefetchLenses} from 'queries/lenses.ts';
 import {prefetchClusterings} from 'queries/clusterings.ts';
 import {prefetchDatasetsTimbuctooForJob} from 'queries/datasets_timbuctoo.ts';
 import {prefetchDatasetsSPARQLForJob} from 'queries/datasets_sparql.ts';
+import {prefetchMappingsForJob} from 'queries/mapping.ts';
 import {setUpJobSocket} from 'queries/socket.ts';
 import useActiveJob from 'stores/useActiveJob.ts';
 import useEntityTypeSelections from 'stores/useEntityTypeSelections.ts';
@@ -35,6 +36,7 @@ async function loadJobState(queryClient: QueryClient, jobId: string) {
 
     prefetchDatasetsTimbuctooForJob(queryClient, job);
     prefetchDatasetsSPARQLForJob(queryClient, job);
+    prefetchMappingsForJob(queryClient, job);
 
     const socket = setUpJobSocket(queryClient, jobId);
     useActiveJob.getState().setJob(job, socket);

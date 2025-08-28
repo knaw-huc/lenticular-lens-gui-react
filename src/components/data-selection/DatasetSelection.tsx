@@ -1,7 +1,8 @@
-import {IconAutomation, IconX} from '@tabler/icons-react';
+import {IconAutomation, IconTrash, IconX} from '@tabler/icons-react';
 import Modal from 'components/Modal.tsx';
 import Checkbox from 'components/Checkbox.tsx';
 import DownloadStatus from 'components/DownloadStatus.tsx';
+import MappingChooserModal from 'components/data-selection/MappingChooserModal.tsx';
 import DatasetBrowser from 'components/data-selection/DatasetBrowser.tsx';
 import SPARQLSelection from 'components/data-selection/SPARQLSelection.tsx';
 import TimbuctooSelection from 'components/data-selection/TimbuctooSelection.tsx';
@@ -11,7 +12,7 @@ import useDataset from 'hooks/useDataset.ts';
 import useDatasets from 'hooks/useDatasets.ts';
 import useEntityTypeSelections from 'stores/useEntityTypeSelections.ts';
 import {ButtonGroup, Form, LabelGroup, Spinner} from 'utils/components.tsx';
-import {DatasetRef, EntityTypeSelection, SPARQLDatasetRef, TimbuctooDatasetRef} from 'utils/interfaces.ts';
+import {DatasetRef, EntityTypeSelection, Mapping, SPARQLDatasetRef, TimbuctooDatasetRef} from 'utils/interfaces.ts';
 import classes from './DatasetSelection.module.css';
 
 export default function DatasetSelection({ets, isInUse}: { ets: EntityTypeSelection, isInUse: boolean }) {
@@ -19,7 +20,7 @@ export default function DatasetSelection({ets, isInUse}: { ets: EntityTypeSelect
     const datasetRef = ets.dataset;
 
     function updateDatasetRef(datasetRef: DatasetRef) {
-        !isInUse && update(ets.id, entityTypeSelection => entityTypeSelection.dataset = datasetRef);
+        update(ets.id, entityTypeSelection => entityTypeSelection.dataset = datasetRef);
     }
 
     function updateDatasetRefInline(datasetRef: DatasetRef) {
@@ -49,36 +50,63 @@ export default function DatasetSelection({ets, isInUse}: { ets: EntityTypeSelect
 
     return (
         <div className={classes.dataset}>
-            <Form isDisabled={isInUse}>
-                <DataSourceSelection datasetRef={datasetRef} updateDataSource={updateDataSource}/>
-                {datasetRef && <>
-                    <DataSourceSelectionConfiguration datasetRef={datasetRef} updateDatasetRef={updateDatasetRefInline}/>
-                    <DataSelected datasetRef={datasetRef}/>
-                </>}
+            <Form inline>
+                <DataSourceSelection datasetRef={datasetRef} isInUse={isInUse} updateDataSource={updateDataSource}/>
+                {datasetRef && <MappingSelection
+                    mapping={ets.dataset?.mapping || null}
+                    updateMapping={mapping => updateDatasetRef({...datasetRef, mapping})}/>}
             </Form>
 
-            {datasetRef && <DataSelection datasetRef={datasetRef} updateDatasetRef={updateDatasetRef} isInUse={isInUse}/>}
+            {datasetRef && <Form isDisabled={isInUse}>
+                <DataSourceSelectionConfiguration datasetRef={datasetRef} updateDatasetRef={updateDatasetRefInline}/>
+                <DataSelected datasetRef={datasetRef}/>
+            </Form>}
+
+            {datasetRef &&
+                <DataSelection datasetRef={datasetRef} updateDatasetRef={updateDatasetRef} isInUse={isInUse}/>}
         </div>
     );
 }
 
-function DataSourceSelection({datasetRef, updateDataSource}: {
+function DataSourceSelection({datasetRef, isInUse, updateDataSource}: {
     datasetRef: DatasetRef | null,
+    isInUse: boolean,
     updateDataSource: (type: 'timbuctoo' | 'sparql') => void
 }) {
     return (
         <LabelGroup inline={true} label="Data source" className={classes.type}>
             <ButtonGroup>
-                <Checkbox asButton checked={datasetRef?.type === 'timbuctoo'}
+                <Checkbox asButton disabled={isInUse} checked={datasetRef?.type === 'timbuctoo'}
                           onCheckedChange={_ => updateDataSource('timbuctoo')}>
                     Timbuctoo
                 </Checkbox>
 
-                <Checkbox asButton checked={datasetRef?.type === 'sparql'}
+                <Checkbox asButton disabled={isInUse} checked={datasetRef?.type === 'sparql'}
                           onCheckedChange={_ => updateDataSource('sparql')}>
                     SPARQL
                 </Checkbox>
             </ButtonGroup>
+        </LabelGroup>
+    );
+}
+
+function MappingSelection({mapping, updateMapping}: {
+    mapping: Mapping | null,
+    updateMapping: (mapping: Mapping | null) => void
+}) {
+    return (
+        <LabelGroup label="JSON-LD Mapping" inline>
+            {mapping && <>
+                {mapping.url && <span>{mapping.url}</span>}
+                {mapping.file && <span>{mapping.file.name}</span>}
+
+                <button className={classes.removeBtn} title="Remove mapping"
+                        onClick={_ => updateMapping(null)}>
+                    <IconTrash size="1em"/>
+                </button>
+            </>}
+
+            {!mapping && <MappingChooserModal updateMapping={updateMapping}/>}
         </LabelGroup>
     );
 }

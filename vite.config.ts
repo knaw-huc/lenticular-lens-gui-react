@@ -14,6 +14,7 @@ export default defineConfig({
         proxy: {
             '/userinfo': 'http://127.0.0.1:8000',
             '/methods': 'http://127.0.0.1:8000',
+            '/mappings': 'http://127.0.0.1:8000',
             '/datasets': 'http://127.0.0.1:8000',
             '/job': 'http://127.0.0.1:8000',
             '/socket.io': {

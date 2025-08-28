@@ -1,0 +1,18 @@
+.dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1em;
+    gap: 1em;
+    border: 2px dashed #eeeeee;
+    border-radius: 2px;
+    background-color: #fafafa;
+    color: #bdbdbd;
+    outline: none;
+    transition: border 0.24s ease-in-out;
+
+    span {
+        margin: 0;
+        font-weight: 700;
+    }
+}

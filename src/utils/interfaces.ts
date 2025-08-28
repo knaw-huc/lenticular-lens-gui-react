@@ -356,6 +356,7 @@ export interface EntityTypeSelection extends BasicMetadata {
 export interface DatasetRef {
     type: 'timbuctoo' | 'sparql' | 'rdf';
     entity_type_id: string;
+    mapping?: Mapping | null;
 }
 
 export interface TimbuctooDatasetRef extends DatasetRef {
@@ -367,6 +368,15 @@ export interface TimbuctooDatasetRef extends DatasetRef {
 export interface SPARQLDatasetRef extends DatasetRef {
     type: 'sparql';
     sparql_endpoint: string;
+}
+
+export interface Mapping {
+    type: 'jsonld';
+    url?: string;
+    file?: {
+        id: string;
+        name: string;
+    }
 }
 
 export interface Filter extends LogicTree<'conditions', FilterCondition> {

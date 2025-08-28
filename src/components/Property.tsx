@@ -17,6 +17,7 @@ import {
 } from '@tabler/icons-react';
 import useDataset from 'hooks/useDataset.ts';
 import useDatasets from 'hooks/useDatasets.ts';
+import {useMapping} from 'queries/mapping.ts';
 import DownloadStatus from 'components/DownloadStatus.tsx';
 import {DatasetRef} from 'utils/interfaces.ts';
 import {Properties} from 'utils/components.tsx';
@@ -56,6 +57,7 @@ export default function Property(
     }) {
     const {dataset, entityType} = useDataset(datasetRef);
     const {getDownloadInfo, startDownload} = useDatasets(datasetRef);
+    const {data: mapping} = useMapping(datasetRef.mapping?.url || datasetRef.mapping?.file?.id || null);
 
     if (!dataset || !entityType)
         return;
@@ -95,8 +97,10 @@ export default function Property(
             const optionMatches = (entityTypeId || '').toLowerCase().indexOf(s) > -1;
             const shortUriMatches = entityType && (entityType.shortened_uri || '').toLowerCase().indexOf(s) > -1;
             const uriMatches = entityType && (entityType.uri || '').toLowerCase().indexOf(s) > -1;
+            const mappingMatches = entityType && mapping &&
+                entityType.uri in mapping && mapping[entityType.uri].toLowerCase().indexOf(s) > -1;
 
-            return optionMatches || shortUriMatches || uriMatches;
+            return optionMatches || shortUriMatches || uriMatches || mappingMatches;
         })];
     }
 
@@ -107,11 +111,16 @@ export default function Property(
 
             const linksOnlyMatches = !allowLinksOnly || (property &&
                 (property.is_link || property.id === 'uri'));
+            if (!linksOnlyMatches)
+                return false;
+
             const optionMatches = (propertyId || '').toLowerCase().indexOf(s) > -1;
             const shortUriMatches = property && (property.shortened_uri || '').toLowerCase().indexOf(s) > -1;
             const uriMatches = property && (property.uri || '').toLowerCase().indexOf(s) > -1;
+            const mappingMatches = property && mapping &&
+                property.uri in mapping && mapping[property.uri].toLowerCase().indexOf(s) > -1;
 
-            return linksOnlyMatches && (optionMatches || shortUriMatches || uriMatches);
+            return optionMatches || shortUriMatches || uriMatches || mappingMatches;
         });
     }
 
@@ -121,13 +130,20 @@ export default function Property(
     }
 
     function getEntityTypeLabel(entityTypeId: string) {
-        return dataset!.entity_types[entityTypeId]?.shortened_uri || entityTypeId;
+        const entityType = dataset!.entity_types[entityTypeId];
+        if (entityType)
+            return mapping && entityType.uri in mapping ? mapping[entityType.uri] : entityType.shortened_uri;
+
+        return entityTypeId;
     }
 
     function getPropertyLabel(entityTypeId: string, propertyId: string) {
-        const entityType = dataset!.entity_types[entityTypeId];
-        return (entityType?.properties[propertyId]?.is_inverse ? '← ' : '')
-            + (entityType?.properties[propertyId]?.shortened_uri || propertyId);
+        const property = dataset!.entity_types[entityTypeId]?.properties[propertyId];
+        if (property)
+            return (property.is_inverse ? '← ' : '') +
+                (mapping && property.uri in mapping ? mapping[property.uri] : property.shortened_uri);
+
+        return propertyId;
     }
 
     function getEntityTypeOption(entityTypeId: string) {
@@ -137,8 +153,11 @@ export default function Property(
             <div className={classes.option}>
                 <div className={classes.optionMain}>
                     {entityType && getEntityTypeLabel(entityTypeId)}
-
                     {!entityType && <span className={classes.optionStop}>Value</span>}
+
+                    {mapping && entityType && entityType.uri in mapping && <span>
+                        {entityType.shortened_uri}
+                    </span>}
 
                     {entityType?.uri && entityType.shortened_uri !== entityType.uri && <span>
                         {entityType.uri}
@@ -162,6 +181,10 @@ export default function Property(
             <div className={classes.option}>
                 <div className={classes.optionMain}>
                     {getPropertyLabel(entityTypeId, propertyId)}
+
+                    {mapping && property && property.uri in mapping && <span>
+                        {property.shortened_uri}
+                    </span>}
 
                     {property?.uri && property.shortened_uri !== property.uri && <span>
                         {property.uri}
@@ -191,7 +214,7 @@ export default function Property(
                       stopProperty={stopProperty}
                       infoLabels={showLabel ? [
                           dataset.title,
-                          entityType.label || entityType.shortened_uri
+                          mapping && entityType!.uri in mapping ? mapping[entityType!.uri] : entityType!.shortened_uri
                       ] : undefined}
                       values={values}
                       getCollectionLabel={getEntityTypeLabel}
@@ -209,11 +232,15 @@ export default function Property(
 }
 
 export function PropertyLabel({datasetRef, className}: { datasetRef: DatasetRef, className?: string }) {
-    const {dataset, entityType} = useDataset(datasetRef)!;
+    const {dataset, entityType} = useDataset(datasetRef);
+    const {data: mapping} = useMapping(datasetRef.mapping?.url || datasetRef.mapping?.file?.id || null);
+
+    const datasetLabel = dataset!.title;
+    const entityTypeLabel = mapping && entityType!.uri in mapping
+        ? mapping[entityType!.uri] : entityType!.shortened_uri;
 
     return (
-        <PropertyPathLabels className={clsx(classes.property, className)}
-                            labels={[dataset!.title, entityType!.shortened_uri]}/>
+        <PropertyPathLabels className={clsx(classes.property, className)} labels={[datasetLabel, entityTypeLabel]}/>
     );
 }
 
