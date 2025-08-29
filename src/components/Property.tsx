@@ -91,37 +91,77 @@ export default function Property(
 
     function getEntityTypeOptions(entityTypeId: string, property: string, searchValue: string) {
         const s = searchValue.toLowerCase();
-        return [stopProperty, ...dataset!.entity_types[entityTypeId].properties[property].referenced.filter(entityTypeId => {
-            const entityType = dataset!.entity_types[entityTypeId];
+        const entityTypes = dataset!.entity_types[entityTypeId].properties[property].referenced
+            .map(entityTypeId => dataset!.entity_types[entityTypeId])
+            .filter(entityType => entityType !== null)
+            .sort((entityTypeA, entityTypeB) => {
+                if (mapping && entityTypeA.uri in mapping && entityTypeB.uri in mapping) {
+                    const cmp = mapping[entityTypeA.uri].toLowerCase().localeCompare(mapping[entityTypeB.uri].toLowerCase());
+                    if (cmp !== 0)
+                        return cmp;
+                }
+                if (entityTypeA.label && entityTypeB.label) {
+                    const cmp = entityTypeA.label.toLowerCase().localeCompare(entityTypeB.label.toLowerCase());
+                    if (cmp !== 0)
+                        return cmp;
+                }
+                if (mapping && entityTypeA.uri in mapping || entityTypeA.label)
+                    return -1;
+                if (mapping && entityTypeB.uri in mapping || entityTypeB.label)
+                    return 1;
+                return entityTypeA.shortened_uri.localeCompare(entityTypeB.shortened_uri);
+            });
 
-            const optionMatches = (entityTypeId || '').toLowerCase().indexOf(s) > -1;
-            const shortUriMatches = entityType && (entityType.shortened_uri || '').toLowerCase().indexOf(s) > -1;
-            const uriMatches = entityType && (entityType.uri || '').toLowerCase().indexOf(s) > -1;
-            const mappingMatches = entityType && mapping &&
-                entityType.uri in mapping && mapping[entityType.uri].toLowerCase().indexOf(s) > -1;
+        const filteredEntityTypes = entityTypes.filter(entityType => {
+            const optionMatches = entityType.id.toLowerCase().indexOf(s) > -1;
+            const shortUriMatches = entityType.shortened_uri.toLowerCase().indexOf(s) > -1;
+            const uriMatches = entityType.uri.toLowerCase().indexOf(s) > -1;
+            const mappingMatches = mapping && entityType.uri in mapping &&
+                mapping[entityType.uri].toLowerCase().indexOf(s) > -1;
 
             return optionMatches || shortUriMatches || uriMatches || mappingMatches;
-        })];
+        });
+
+        return [...filteredEntityTypes.map(entityType => entityType.id), stopProperty];
     }
 
     function getPropertyOptions(entityTypeId: string, searchValue: string) {
         const s = searchValue.toLowerCase();
-        return Object.keys(dataset!.entity_types[entityTypeId].properties).filter(propertyId => {
-            const property = dataset!.entity_types[entityTypeId].properties[propertyId];
+        const properties = Object.keys(dataset!.entity_types[entityTypeId].properties)
+            .map(propertyId => dataset!.entity_types[entityTypeId].properties[propertyId])
+            .filter(property => property !== null)
+            .sort((propertyA, propertyB) => {
+                if (!propertyA.is_inverse && propertyB.is_inverse)
+                    return -1;
+                if (!propertyB.is_inverse && propertyA.is_inverse)
+                    return 1;
+                if (mapping && propertyA.uri in mapping && propertyB.uri in mapping) {
+                    const cmp = mapping[propertyA.uri].toLowerCase().localeCompare(mapping[propertyB.uri].toLowerCase());
+                    if (cmp !== 0)
+                        return cmp;
+                }
+                if (mapping && propertyA.uri in mapping)
+                    return -1;
+                if (mapping && propertyB.uri in mapping)
+                    return 1;
+                return propertyA.shortened_uri.localeCompare(propertyB.shortened_uri);
+            });
 
-            const linksOnlyMatches = !allowLinksOnly || (property &&
-                (property.is_link || property.id === 'uri'));
+        const filteredProperties = properties.filter(property => {
+            const linksOnlyMatches = !allowLinksOnly || property.is_link || property.id === 'uri';
             if (!linksOnlyMatches)
                 return false;
 
-            const optionMatches = (propertyId || '').toLowerCase().indexOf(s) > -1;
-            const shortUriMatches = property && (property.shortened_uri || '').toLowerCase().indexOf(s) > -1;
-            const uriMatches = property && (property.uri || '').toLowerCase().indexOf(s) > -1;
-            const mappingMatches = property && mapping &&
-                property.uri in mapping && mapping[property.uri].toLowerCase().indexOf(s) > -1;
+            const optionMatches = property.id.toLowerCase().indexOf(s) > -1;
+            const shortUriMatches = property.shortened_uri.toLowerCase().indexOf(s) > -1;
+            const uriMatches = property.uri.toLowerCase().indexOf(s) > -1;
+            const mappingMatches = mapping && property.uri in mapping &&
+                mapping[property.uri].toLowerCase().indexOf(s) > -1;
 
             return optionMatches || shortUriMatches || uriMatches || mappingMatches;
         });
+
+        return filteredProperties.map(entityType => entityType.id);
     }
 
     function onPropertyChange(newProperty: (string | null)[], prevProperty: (string | null)[],) {
