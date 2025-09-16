@@ -48,6 +48,9 @@ export async function addMapping(url?: string, file?: File): Promise<string> {
 }
 
 async function loadMapping(mappingId: string): Promise<{ [uri: string]: string }> {
+    if (!mappingId)
+        return {};
+
     const response = await fetch(`${api}/mappings/${mappingId}`);
     if (!response.ok)
         throw new Error(`Unable to fetch mapping for id ${mappingId}!`);
