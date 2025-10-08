@@ -112,11 +112,11 @@ function RangeField({item, value, onUpdate}: {
 
 function ChoicesField({choices, value, onUpdate}: {
     choices: { [choice: string]: string },
-    value: string,
+    value?: string,
     onUpdate: (value: string) => void
 }) {
     return (
-        <select value={value} onChange={e => onUpdate(e.target.value)}>
+        <select value={value || ''} onChange={e => onUpdate(e.target.value)}>
             <option value="" disabled>Select an option</option>
             {Object.keys(choices).map(choice => <option key={choice} value={choice}>
                 {choices[choice]}

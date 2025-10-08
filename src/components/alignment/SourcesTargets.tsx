@@ -28,7 +28,7 @@ export default function SourcesTargets({linksetSpec, isInUse}: { linksetSpec: Li
         return (index: number) => !isInUse && update(linksetSpec.id, linksetSpec => {
             const etsId = (isSource ? linksetSpec.sources : linksetSpec.targets)[index];
             (isSource ? linksetSpec.sources : linksetSpec.targets).splice(index, 1);
-            onUpdateEts(linksetSpec, etsId, isSource, false);
+            etsId > -1 && onUpdateEts(linksetSpec, etsId, isSource, false);
         });
     }
 
@@ -81,7 +81,7 @@ function SourcesTargetsList({isSources, className, ids, add, update, remove}: {
 
             <Results distinctLines={false}>
                 {ids.map((id, index) =>
-                    <SourceTarget key={id} id={id} ids={ids} index={index} update={update} remove={remove}/>)}
+                    <SourceTarget key={id + '_' + index} id={id} ids={ids} index={index} update={update} remove={remove}/>)}
             </Results>
 
             <button onClick={add}>

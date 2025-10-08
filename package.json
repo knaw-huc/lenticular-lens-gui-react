@@ -1,7 +1,7 @@
 {
   "name": "lenticular-lens-gui-react",
   "private": true,
-  "version": "1.2",
+  "version": "1.2.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
