@@ -25,6 +25,17 @@ import classes from './Property.module.css';
 
 const stopProperty = '__value__';
 
+function getLabel(label: string) {
+    const collapsed = label.split(/[:#\/]/).pop() as string;
+
+    return (
+        <>
+            <span className={classes.full}>{label}</span>
+            <span className={classes.collapsed}>{collapsed}</span>
+        </>
+    );
+}
+
 export default function Property(
     {
         property,
@@ -164,26 +175,27 @@ export default function Property(
         return filteredProperties.map(entityType => entityType.id);
     }
 
-    function onPropertyChange(newProperty: (string | null)[], prevProperty: (string | null)[],) {
+    function onPropertyChange(newProperty: (string | null)[], prevProperty: (string | null)[]) {
         if (onChange)
             onChange(newProperty.map(prop => prop || ''), prevProperty.map(prop => prop || ''));
     }
 
     function getEntityTypeLabel(entityTypeId: string) {
         const entityType = dataset!.entity_types[entityTypeId];
-        if (entityType)
-            return mapping && entityType.uri in mapping ? mapping[entityType.uri] : entityType.shortened_uri;
+        const label = entityType
+            ? mapping && entityType.uri in mapping ? mapping[entityType.uri] : entityType.shortened_uri
+            : entityTypeId;
 
-        return entityTypeId;
+        return getLabel(label);
     }
 
     function getPropertyLabel(entityTypeId: string, propertyId: string) {
         const property = dataset!.entity_types[entityTypeId]?.properties[propertyId];
-        if (property)
-            return (property.is_inverse ? '← ' : '') +
-                (mapping && property.uri in mapping ? mapping[property.uri] : property.shortened_uri);
+        const label = property
+            ? (property.is_inverse ? '← ' : '') + (mapping && property.uri in mapping ? mapping[property.uri] : property.shortened_uri)
+            : propertyId;
 
-        return propertyId;
+        return getLabel(label);
     }
 
     function getEntityTypeOption(entityTypeId: string) {

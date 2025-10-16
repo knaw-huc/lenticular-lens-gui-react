@@ -40,6 +40,20 @@
             margin-left: 0.5em;
         }
     }
+
+    .collapsed {
+        display: none;
+    }
+
+    :global(.property-collapsed) {
+        .collapsed {
+            display: initial;
+        }
+
+        .full {
+            display: none;
+        }
+    }
 }
 
 :global(.property-popover) {

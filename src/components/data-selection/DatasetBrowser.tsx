@@ -1,3 +1,4 @@
+import {useMemo, useState} from 'react';
 import {ResultItem, Results} from 'components/Results.tsx';
 import DownloadStatus from 'components/DownloadStatus.tsx';
 import useDataset from 'hooks/useDataset.ts';
@@ -25,12 +26,36 @@ export default function DatasetBrowser({datasetRef, updateDatasetRef}: {
     return (
         <div className={classes.dataSelection}>
             {datasetIdentifier &&
-                <DatasetSelection datasets={datasets} dataset={dataset} setDataset={updateDatasetId}/>}
+                <DatasetSelectionWithFilter datasets={datasets} dataset={dataset} setDataset={updateDatasetId}/>}
 
             {dataset && <EntitySelection
                 datasetRef={datasetRef}
                 entityTypes={dataset.entity_types}
                 setEntityType={updateEntityTypeId}/>}
+        </div>
+    );
+}
+
+function DatasetSelectionWithFilter({datasets, dataset, setDataset}: {
+    datasets: { [datasetId: string]: Dataset }
+    dataset: Dataset | null,
+    setDataset: (datasetId: string) => void
+}) {
+    const [filter, setFilter] = useState('');
+    const lowercasedFilter = filter.toLowerCase();
+
+    const filteredDatasets = useMemo(() => Object.fromEntries(Object.entries(datasets).filter(([_, ds]) =>
+        dataset?.id === ds.id ||
+        ds.title.toLowerCase().includes(lowercasedFilter) ||
+        (ds.name && ds.name.toLowerCase().includes(lowercasedFilter)) ||
+        (ds.description && ds.description.toLowerCase().includes(lowercasedFilter))
+    )), [lowercasedFilter, datasets, dataset]);
+
+    return (
+        <div className={classes.datasetsWithFilter}>
+            <input type="text" name="dataset-filter" placeholder="Filter datasets"
+                   value={filter} onChange={e => setFilter(e.target.value)}/>
+            <DatasetSelection datasets={filteredDatasets} dataset={dataset} setDataset={setDataset}/>
         </div>
     );
 }

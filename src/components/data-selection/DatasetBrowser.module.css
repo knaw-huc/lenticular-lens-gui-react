@@ -6,6 +6,16 @@
     max-height: 85vh;
 }
 
+.datasetsWithFilter {
+    display: flex;
+    flex-direction: column;
+
+    input {
+        margin: 0.5em 2em;
+        width: calc(100% - 4em);
+    }
+}
+
 .datasets {
     padding: 0 2em;
     overflow-y: scroll;
@@ -41,7 +51,7 @@
         flex-direction: row;
     }
 
-    .datasets {
+    .datasetsWithFilter {
         width: 60%;
         flex-grow: 1;
     }

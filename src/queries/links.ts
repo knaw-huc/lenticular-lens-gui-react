@@ -271,7 +271,7 @@ function createLinksTotalsFormData(props: LinksTotalsProps, applyFilters: boolea
 
     if (applyFilters) {
         for (const clusterId of props.clusterIds)
-            data.append('cluster_id', clusterId.toString());
+            data.append('cluster_ids', clusterId.toString());
 
         props.min > 0 && data.append('min', props.min.toString());
         props.max < 1 && data.append('max', props.max.toString());
