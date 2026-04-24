@@ -72,9 +72,9 @@ export interface FileRoutesByFullPath {
   '/$jobId/alignment/$id': typeof JobIdAlignmentIdRoute
   '/$jobId/data-selection/$id': typeof JobIdDataSelectionIdRoute
   '/$jobId/lens/$id': typeof JobIdLensIdRoute
-  '/$jobId/alignment': typeof JobIdAlignmentIndexRoute
-  '/$jobId/data-selection': typeof JobIdDataSelectionIndexRoute
-  '/$jobId/lens': typeof JobIdLensIndexRoute
+  '/$jobId/alignment/': typeof JobIdAlignmentIndexRoute
+  '/$jobId/data-selection/': typeof JobIdDataSelectionIndexRoute
+  '/$jobId/lens/': typeof JobIdLensIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -107,9 +107,9 @@ export interface FileRouteTypes {
     | '/$jobId/alignment/$id'
     | '/$jobId/data-selection/$id'
     | '/$jobId/lens/$id'
-    | '/$jobId/alignment'
-    | '/$jobId/data-selection'
-    | '/$jobId/lens'
+    | '/$jobId/alignment/'
+    | '/$jobId/data-selection/'
+    | '/$jobId/lens/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -164,21 +164,21 @@ declare module '@tanstack/react-router' {
     '/$jobId/lens/': {
       id: '/$jobId/lens/'
       path: '/lens'
-      fullPath: '/$jobId/lens'
+      fullPath: '/$jobId/lens/'
       preLoaderRoute: typeof JobIdLensIndexRouteImport
       parentRoute: typeof JobIdRoute
     }
     '/$jobId/data-selection/': {
       id: '/$jobId/data-selection/'
       path: '/data-selection'
-      fullPath: '/$jobId/data-selection'
+      fullPath: '/$jobId/data-selection/'
       preLoaderRoute: typeof JobIdDataSelectionIndexRouteImport
       parentRoute: typeof JobIdRoute
     }
     '/$jobId/alignment/': {
       id: '/$jobId/alignment/'
       path: '/alignment'
-      fullPath: '/$jobId/alignment'
+      fullPath: '/$jobId/alignment/'
       preLoaderRoute: typeof JobIdAlignmentIndexRouteImport
       parentRoute: typeof JobIdRoute
     }

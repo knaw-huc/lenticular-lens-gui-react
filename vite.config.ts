@@ -1,15 +1,21 @@
 import {defineConfig} from 'vite';
-import react from '@vitejs/plugin-react';
-import tsconfigPaths from 'vite-tsconfig-paths';
+import babel from '@rolldown/plugin-babel';
+import react, {reactCompilerPreset} from '@vitejs/plugin-react';
 import {tanstackRouter} from '@tanstack/router-plugin/vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
-        tsconfigPaths(),
         tanstackRouter(),
         react(),
+        babel({presets: [reactCompilerPreset()]}),
     ],
+    build: {
+        cssMinify: "esbuild",
+    },
+    resolve: {
+        tsconfigPaths: true,
+    },
     server: {
         proxy: {
             '/userinfo': 'http://127.0.0.1:8000',
