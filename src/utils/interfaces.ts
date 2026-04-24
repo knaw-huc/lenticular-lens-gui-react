@@ -249,7 +249,6 @@ export interface Cluster {
     links_filtered: LinksTotals;
     size: number;
     size_filtered: number;
-    nodes: null;
     extended: boolean;
     reconciled: boolean;
     values: PropertyValues[];
