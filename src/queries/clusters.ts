@@ -1,5 +1,12 @@
 import {useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery} from '@tanstack/react-query';
-import {Cluster, ClusterGraph, ClustersTotals} from 'utils/interfaces.ts';
+import {
+    Cluster,
+    ClusterGraph,
+    ClustersTotals,
+    ClusterTotals,
+    MinimalCluster,
+    PropertyValues
+} from 'utils/interfaces.ts';
 import {api} from 'utils/config.ts';
 
 interface ClustersTotalsProperties {
@@ -13,13 +20,6 @@ export interface ClustersProperties extends ClustersTotalsProperties {
     sort?: 'size_asc' | 'size_desc' | 'count_asc' | 'count_desc';
 }
 
-interface ClusterIds {
-    clusterIds: number[];
-}
-
-type ClustersTotalsProps = ClustersTotalsProperties & ClusterIds;
-type ClustersProps = ClustersProperties & ClusterIds;
-
 const pageSize = 5;
 
 export async function runClustering(jobId: string, type: 'linkset' | 'lens', id: number): Promise<boolean> {
@@ -30,7 +30,7 @@ export async function runClustering(jobId: string, type: 'linkset' | 'lens', id:
     return result.ok;
 }
 
-export function useClusters(jobId: string, type: 'linkset' | 'lens', id: number, props: ClustersProps) {
+export function useClusters(jobId: string, type: 'linkset' | 'lens', id: number, props: ClustersProperties) {
     return useSuspenseInfiniteQuery({
         queryKey: ['clusters', jobId, type, id, props],
         initialPageParam: 0,
@@ -39,11 +39,24 @@ export function useClusters(jobId: string, type: 'linkset' | 'lens', id: number,
     });
 }
 
-export function useClustersTotals(jobId: string, type: 'linkset' | 'lens', id: number,
-                                  props: ClustersProps, applyFilters: boolean = false) {
+export function useClusterSelectionTotals(jobId: string, type: 'linkset' | 'lens', id: number, clusterIds: number[]) {
     return useSuspenseQuery({
-        queryKey: ['clusters_totals', jobId, type, id, props, applyFilters],
-        queryFn: async () => loadClustersTotals(jobId, type, id, props, applyFilters)
+        queryKey: ['clusters_selection_totals', jobId, type, id, clusterIds],
+        queryFn: async () => loadClusterSelectionTotals(jobId, type, id, clusterIds)
+    });
+}
+
+export function useClusterSelectionProps(jobId: string, type: 'linkset' | 'lens', id: number, clusterIds: number[]) {
+    return useSuspenseQuery({
+        queryKey: ['clusters_selection_props', jobId, type, id, clusterIds],
+        queryFn: async () => loadClusterSelectionProps(jobId, type, id, clusterIds)
+    });
+}
+
+export function useClustersTotals(jobId: string, type: 'linkset' | 'lens', id: number, props?: ClustersProperties) {
+    return useSuspenseQuery({
+        queryKey: ['clusters_totals', jobId, type, id, props],
+        queryFn: async () => loadClustersTotals(jobId, type, id, props)
     });
 }
 
@@ -54,7 +67,7 @@ export function useClusterGraph(jobId: string, type: 'linkset' | 'lens', id: num
     });
 }
 
-export function useResetClusters(jobId: string, type: 'linkset' | 'lens', id: number, props: ClustersProps) {
+export function useResetClusters(jobId: string, type: 'linkset' | 'lens', id: number, props: ClustersProperties) {
     const queryClient = useQueryClient();
     const resetClusters = () => {
         queryClient.invalidateQueries({queryKey: ['clusters', jobId, type, id, props]});
@@ -63,42 +76,61 @@ export function useResetClusters(jobId: string, type: 'linkset' | 'lens', id: nu
     return {resetClusters};
 }
 
-async function loadClusters(jobId: string, type: 'linkset' | 'lens', id: number, page: number, props: ClustersProps): Promise<Cluster[]> {
-    const fetchWithProps = fetch(`${api}/job/${jobId}/${type}/${id}/clusters`, {
+async function loadClusters(jobId: string, type: 'linkset' | 'lens', id: number, page: number, props: ClustersProperties): Promise<MinimalCluster[]> {
+    const response = await fetch(`${api}/job/${jobId}/${type}/${id}/clusters`, {
         method: 'POST',
-        body: createClustersFormData(props, false, 'multiple', page)
+        body: createClustersFormData(props, page)
     });
 
-    const fetchWithFiltering = fetch(`${api}/job/${jobId}/${type}/${id}/clusters`, {
-        method: 'POST',
-        body: createClustersFormData(props, true, 'none', page)
-    });
-
-    const [responseWithProps, responseWithFiltering] = await Promise.all([fetchWithProps, fetchWithFiltering]);
-    if (!responseWithProps.ok || !responseWithFiltering.ok)
+    if (!response.ok)
         throw new Error('Unable to fetch clusters!');
 
-    const resultsWithProps = await responseWithProps.json();
-    const resultsWithFiltering = await responseWithFiltering.json();
-    return resultsWithProps.map((cluster: Cluster, idx: number) => ({
+    const results = await response.json();
+    return results.map((cluster: Cluster, idx: number) => ({
         ...cluster,
-        links_filtered: resultsWithFiltering.find((res: Cluster) => res.id === cluster.id)?.links || {
-            accepted: 0,
-            rejected: 0,
-            uncertain: 0,
-            unchecked: 0,
-            disputed: 0
-        },
-        size_filtered: resultsWithFiltering.find((res: Cluster) => res.id === cluster.id)?.size || 0,
         count: (pageSize * page) + idx + 1
     }));
 }
 
-async function loadClustersTotals(jobId: string, type: 'linkset' | 'lens', id: number,
-                                  props: ClustersTotalsProps, applyFilters: boolean = false): Promise<ClustersTotals> {
+async function loadClusterSelectionTotals(jobId: string, type: 'linkset' | 'lens', id: number, clusterIds: number[]): Promise<Record<number, ClusterTotals>> {
+    const response = await fetch(`${api}/job/${jobId}/${type}/${id}/clusters`, {
+        method: 'POST',
+        body: createClustersAddedFormData(clusterIds, false)
+    });
+
+    if (!response.ok)
+        throw new Error('Unable to fetch cluster totals for selection!');
+
+    const results: Cluster[] = await response.json();
+    return results.reduce<Record<number, ClusterTotals>>((acc, cluster) => {
+        acc[cluster.id] = {
+            links: cluster.links,
+            size: cluster.size
+        };
+        return acc;
+    }, {});
+}
+
+async function loadClusterSelectionProps(jobId: string, type: 'linkset' | 'lens', id: number, clusterIds: number[]): Promise<Record<number, PropertyValues[]>> {
+    const response = await fetch(`${api}/job/${jobId}/${type}/${id}/clusters`, {
+        method: 'POST',
+        body: createClustersAddedFormData(clusterIds, true)
+    });
+
+    if (!response.ok)
+        throw new Error('Unable to fetch cluster props for selection!');
+
+    const results: Cluster[] = await response.json();
+    return results.reduce<Record<number, PropertyValues[]>>((acc, cluster) => {
+        acc[cluster.id] = cluster.values || [];
+        return acc;
+    }, {});
+}
+
+async function loadClustersTotals(jobId: string, type: 'linkset' | 'lens', id: number, props?: ClustersTotalsProperties): Promise<ClustersTotals> {
     const response = await fetch(`${api}/job/${jobId}/${type}/${id}/clusters/totals`, {
         method: 'POST',
-        body: createClustersTotalsFormData(props, applyFilters)
+        body: createClustersTotalsFormData(props)
     });
 
     if (!response.ok)
@@ -115,25 +147,24 @@ async function loadClusterGraph(jobId: string, type: 'linkset' | 'lens', id: num
     return response.json();
 }
 
-function createClustersTotalsFormData(props: ClustersTotalsProps, applyFilters: boolean = false) {
+function createClustersTotalsFormData(props?: ClustersTotalsProperties) {
     const data = new FormData();
-    data.append('apply_filters', applyFilters.toString());
+    data.append('apply_filters', props ? 'true' : 'false');
 
-    if (applyFilters) {
-        props.minSize && props.minSize > 0 && data.append('min_size', props.minSize.toString());
-        props.maxSize && props.maxSize < 1 && data.append('max_size', props.maxSize.toString());
+    if (props) {
+        props.minSize && data.append('min_size', props.minSize.toString());
+        props.maxSize && data.append('max_size', props.maxSize.toString());
 
-        props.minCount && props.minCount > 0 && data.append('min_count', props.minCount.toString());
-        props.maxCount && props.maxCount < 1 && data.append('max_count', props.maxCount.toString());
+        props.minCount && data.append('min_count', props.minCount.toString());
+        props.maxCount && data.append('max_count', props.maxCount.toString());
     }
 
     return data;
 }
 
-function createClustersFormData(props: ClustersProps, applyFilters: boolean = false,
-                                withProperties: 'none' | 'multiple' = 'multiple', page?: number) {
-    const data = createClustersTotalsFormData(props, applyFilters);
-    data.append('with_properties', withProperties);
+function createClustersFormData(props: ClustersProperties, page?: number) {
+    const data = createClustersTotalsFormData(props);
+    data.append('with_properties', 'none');
 
     props.sort && data.append('sort', props.sort);
 
@@ -141,6 +172,17 @@ function createClustersFormData(props: ClustersProps, applyFilters: boolean = fa
         data.append('limit', pageSize.toString());
         data.append('offset', (pageSize * page).toString());
     }
+
+    return data;
+}
+
+function createClustersAddedFormData(clusterIds: number[], isPropsQuery: boolean) {
+    const data = new FormData();
+    data.append('apply_filters', isPropsQuery ? 'true' : 'false');
+    data.append('with_properties', isPropsQuery ? 'multiple' : 'none');
+
+    for (const clusterId of clusterIds)
+        data.append('cluster_ids', clusterId.toString());
 
     return data;
 }

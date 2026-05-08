@@ -38,8 +38,7 @@ export default function ClustersMenu(
                 <div className={classes.counts}>
                     <div className={classes.label}>Filtered / selected / total clusters:</div>
                     <Suspense fallback={<Spinner type="inline"/>}>
-                        <Total jobId={jobId} type={type} id={id}
-                               filteredClusters={filteredClusters} clusterProps={clusterProps}/>
+                        <Total jobId={jobId} type={type} id={id} clusterProps={clusterProps}/>
                     </Suspense> {' / '}
                     {filteredClusters.size.toLocaleString('en')} {' / '}
                     {clustering.clusters_count?.toLocaleString('en') || 0}
@@ -47,8 +46,7 @@ export default function ClustersMenu(
 
                 <Suspense fallback={<Spinner type="inline"/>}>
                     <SelectAllButton jobId={jobId} type={type} id={id}
-                                     filteredClusters={filteredClusters} setFilteredClusters={setFilteredClusters}
-                                     clusterProps={clusterProps}/>
+                                     filteredClusters={filteredClusters} setFilteredClusters={setFilteredClusters}/>
                 </Suspense>
             </div>
 
@@ -101,26 +99,24 @@ export default function ClustersMenu(
     );
 }
 
-function Total({jobId, type, id, filteredClusters, clusterProps}: {
+function Total({jobId, type, id, clusterProps}: {
     jobId: string,
     type: 'linkset' | 'lens',
     id: number,
-    filteredClusters: Set<number>,
     clusterProps: ClustersProperties
 }) {
-    const {data} = useClustersTotals(jobId, type, id, {...clusterProps, clusterIds: [...filteredClusters]}, true);
+    const {data} = useClustersTotals(jobId, type, id, clusterProps);
     return data.total.toLocaleString('en');
 }
 
-function SelectAllButton({jobId, type, id, filteredClusters, setFilteredClusters, clusterProps}: {
+function SelectAllButton({jobId, type, id, filteredClusters, setFilteredClusters}: {
     jobId: string,
     type: 'linkset' | 'lens',
     id: number,
     filteredClusters: Set<number>,
-    setFilteredClusters: (value: Set<number>) => void,
-    clusterProps: ClustersProperties
+    setFilteredClusters: (value: Set<number>) => void
 }) {
-    const {data} = useClustersTotals(jobId, type, id, {...clusterProps, clusterIds: [...filteredClusters]});
+    const {data} = useClustersTotals(jobId, type, id);
     const allClustersAreSelected = data.cluster_ids.every(id => filteredClusters.has(id));
 
     function onToggleSelect() {

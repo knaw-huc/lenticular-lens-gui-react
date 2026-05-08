@@ -5,7 +5,7 @@ import {
     useSuspenseQuery,
     useSuspenseInfiniteQuery
 } from '@tanstack/react-query';
-import {Link, LinksTotals, ValidationState} from 'utils/interfaces.ts';
+import {Link, LinksTotals, MinimalLink, ValidationState} from 'utils/interfaces.ts';
 import {api} from 'utils/config.ts';
 
 interface LinksTotalsProperties {
@@ -58,11 +58,10 @@ export function useLinks(jobId: string, type: 'linkset' | 'lens', id: number, pr
     });
 }
 
-export function useLinksTotals(jobId: string, type: 'linkset' | 'lens', id: number,
-                               props: LinksProps, applyFilters: boolean = false) {
+export function useLinksTotals(jobId: string, type: 'linkset' | 'lens', id: number, props?: LinksProps) {
     return useSuspenseQuery({
-        queryKey: ['links_totals', jobId, type, id, props, applyFilters],
-        queryFn: async () => loadLinksTotals(jobId, type, id, props, applyFilters)
+        queryKey: ['links_totals', jobId, type, id, props],
+        queryFn: async () => loadLinksTotals(jobId, type, id, props)
     });
 }
 
@@ -158,10 +157,10 @@ export function useMotivateSelection(jobId: string, type: 'linkset' | 'lens', id
     });
 }
 
-async function loadLinks(jobId: string, type: 'linkset' | 'lens', id: number, page: number, props: LinksProps): Promise<Link[]> {
+async function loadLinks(jobId: string, type: 'linkset' | 'lens', id: number, page: number, props: LinksProps): Promise<MinimalLink[]> {
     const response = await fetch(`${api}/job/${jobId}/${type}/${id}/links`, {
         method: 'POST',
-        body: createLinksFormData(props, true, 'multiple', page)
+        body: createLinksFormData(props, true, page)
     });
 
     if (!response.ok)
@@ -174,11 +173,10 @@ async function loadLinks(jobId: string, type: 'linkset' | 'lens', id: number, pa
     }));
 }
 
-async function loadLinksTotals(jobId: string, type: 'linkset' | 'lens', id: number,
-                               props: LinksTotalsProps, applyFilters: boolean = false): Promise<LinksTotals> {
+async function loadLinksTotals(jobId: string, type: 'linkset' | 'lens', id: number, props?: LinksTotalsProps): Promise<LinksTotals> {
     const response = await fetch(`${api}/job/${jobId}/${type}/${id}/links/totals`, {
         method: 'POST',
-        body: createLinksTotalsFormData(props, applyFilters)
+        body: createLinksTotalsFormData(props)
     });
 
     if (!response.ok)
@@ -206,7 +204,7 @@ async function validateLink(jobId: string, type: 'linkset' | 'lens', id: number,
 
 async function validateSelection(jobId: string, type: 'linkset' | 'lens', id: number,
                                  props: LinksProps, validation: ValidationState): Promise<void> {
-    const body = createLinksFormData(props, true);
+    const body = createLinksFormData(props, false);
     body.append('validation', validation);
 
     const response = await fetch(`${api}/job/${jobId}/${type}/${id}/validate`, {
@@ -237,7 +235,7 @@ async function motivateLink(jobId: string, type: 'linkset' | 'lens', id: number,
 
 async function motivateSelection(jobId: string, type: 'linkset' | 'lens', id: number,
                                  props: LinksProps, motivation: string): Promise<void> {
-    const body = createLinksFormData(props, true);
+    const body = createLinksFormData(props, false);
     body.append('motivation', motivation);
 
     const response = await fetch(`${api}/job/${jobId}/${type}/${id}/motivate`, {method: 'POST', body});
@@ -265,11 +263,11 @@ function mutateLinks(oldLinks: InfiniteData<Link[], number>, source: string, tar
     return newLinks;
 }
 
-function createLinksTotalsFormData(props: LinksTotalsProps, applyFilters: boolean = false) {
+function createLinksTotalsFormData(props?: LinksTotalsProps) {
     const data = new FormData();
-    data.append('apply_filters', applyFilters.toString());
+    data.append('apply_filters', props ? 'true' : 'false');
 
-    if (applyFilters) {
+    if (props) {
         for (const clusterId of props.clusterIds)
             data.append('cluster_ids', clusterId.toString());
 
@@ -280,10 +278,9 @@ function createLinksTotalsFormData(props: LinksTotalsProps, applyFilters: boolea
     return data;
 }
 
-function createLinksFormData(props: LinksProps, applyFilters: boolean = false,
-                             withProperties?: 'none' | 'multiple', page?: number) {
-    const data = createLinksTotalsFormData(props, applyFilters);
-    withProperties !== undefined && data.append('with_properties', withProperties);
+function createLinksFormData(props: LinksProps, withProps: boolean = false, page?: number) {
+    const data = createLinksTotalsFormData(props);
+    data.append('with_properties', withProps ? 'multiple' : 'none');
 
     props.accepted && data.append('valid', 'accepted');
     props.rejected && data.append('valid', 'rejected');

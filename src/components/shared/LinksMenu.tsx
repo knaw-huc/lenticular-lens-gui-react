@@ -15,11 +15,12 @@ import LinksMotivation from 'components/shared/LinksMotivation.tsx';
 import useViews from 'stores/useViews.ts';
 import {useUpdateJob} from 'queries/job.ts';
 import {
-    LinksProperties,
     useLinksTotals,
     useResetLinks,
     useValidateSelection,
-    useMotivateSelection, LinksProps
+    useMotivateSelection,
+    LinksProperties,
+    LinksProps
 } from 'queries/links.ts';
 import {Filter, LinksTotals, ValidationState, View, ViewFilter, ViewProperty} from 'utils/interfaces.ts';
 import {Badge, ButtonGroup, Spinner, StickyMenu} from 'utils/components.tsx';
@@ -62,7 +63,7 @@ function ValidationStateFilters({jobId, type, id, props, setProp}: {
     setProp: <K extends keyof LinksProperties>(prop: K, value: LinksProperties[K]) => void
 }) {
     const Total = ({prop, applyFilters}: { prop: keyof LinksTotals, applyFilters: boolean }) => {
-        const {data} = useLinksTotals(jobId, type, id, props, applyFilters);
+        const {data} = useLinksTotals(jobId, type, id, applyFilters ? props : undefined);
         return data[prop].toLocaleString('en');
     };
 

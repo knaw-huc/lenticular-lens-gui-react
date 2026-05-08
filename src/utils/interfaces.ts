@@ -217,21 +217,38 @@ export interface Sample {
 }
 
 export interface Link {
-    count: number;
     valid: ValidationState;
     similarity: number;
-    motivation: string | null,
+    motivation: string | null;
     cluster_id: number;
     cluster_hash_id: string;
     link_order: 'source_target' | 'target_source' | 'both';
     source: string;
     source_collections: number[];
-    source_intermediates: number[] | null,
+    source_intermediates: number[] | null;
+    source_values: PropertyValues[];
+    target: string;
+    target_collections: number[];
+    target_intermediates: number[] | null;
+    target_values: PropertyValues[];
+}
+
+export interface MinimalLink {
+    valid: ValidationState;
+    similarity: number;
+    motivation: string | null;
+    cluster_id: number;
+    cluster_hash_id: string;
+    link_order: 'source_target' | 'target_source' | 'both';
+    source: string;
+    source_collections: number[];
+    source_intermediates: number[] | null;
     source_values: PropertyValues[];
     target: string,
     target_collections: number[];
-    target_intermediates: number[] | null,
+    target_intermediates: number[] | null;
     target_values: PropertyValues[];
+    count: number;
 }
 
 export interface LinksTotals {
@@ -246,12 +263,25 @@ export interface Cluster {
     id: number;
     hash_id: string;
     links: LinksTotals;
-    links_filtered: LinksTotals;
     size: number;
-    size_filtered: number;
     extended: boolean;
     reconciled: boolean;
-    values: PropertyValues[];
+    values: PropertyValues[] | null;
+}
+
+export interface MinimalCluster {
+    id: number;
+    hash_id: string;
+    links: LinksTotals;
+    size: number;
+    extended: boolean;
+    reconciled: boolean;
+    count: number;
+}
+
+export interface ClusterTotals {
+    links: LinksTotals;
+    size: number;
 }
 
 export interface ClustersTotals {

@@ -7,11 +7,26 @@ import {ResultItem, Results} from 'components/Results.tsx';
 import LinksMotivation from 'components/shared/LinksMotivation.tsx';
 import LinksMenu from 'components/shared/LinksMenu.tsx';
 import useFilteredClusters from 'stores/useFilteredClusters.ts';
-import {useLinks, LinksProperties, useValidateLink, useMotivateLink} from 'queries/links.ts';
+import {useLinks, LinksProperties, useValidateLink, useMotivateLink, LinksProps} from 'queries/links.ts';
 import useInfiniteLoading from 'hooks/useInfiniteLoading.ts';
-import {Link, ValidationState} from 'utils/interfaces.ts';
+import {Link, MinimalLink, ValidationState} from 'utils/interfaces.ts';
 import {LabelGroup, Spinner} from 'utils/components.tsx';
 import classes from './Links.module.css';
+
+const getValidationClassName = (valid: ValidationState) => {
+    switch (valid) {
+        case 'accepted':
+            return classes.accepted;
+        case 'rejected':
+            return classes.rejected;
+        case 'uncertain':
+            return classes.uncertain;
+        case 'disputed':
+            return classes.disputed;
+        default:
+            return '';
+    }
+};
 
 export default function Links({jobId, type, id}: { jobId: string, type: 'linkset' | 'lens', id: number }) {
     const filteredClusters = useFilteredClusters(state => state.filteredClusters);
@@ -49,6 +64,31 @@ function LinksResults({jobId, type, id, linksProps, filteredClusters}: {
     const props = {...linksProps, clusterIds: [...filteredClusters]};
     const {data, isLoading, fetchNextPage} = useLinks(jobId, type, id, props);
     const {endOfTheListRef} = useInfiniteLoading(fetchNextPage);
+
+    return (
+        <>
+            <Results className={classes.results} distinctLines={false}>
+                {data.pages.map((page, pageNo) =>
+                    <LinksResultPage jobId={jobId} type={type} id={id}
+                                     page={page as MinimalLink[]} pageNo={pageNo} key={pageNo}
+                                     props={props}/>)}
+            </Results>
+
+            <div ref={endOfTheListRef}>
+                {isLoading && <Spinner/>}
+            </div>
+        </>
+    );
+}
+
+function LinksResultPage({jobId, type, id, page, pageNo, props}: {
+    jobId: string,
+    type: 'linkset' | 'lens',
+    id: number,
+    page: MinimalLink[],
+    pageNo: number,
+    props: LinksProps,
+}) {
     const validateMutation = useValidateLink(jobId, type, id, props);
     const motivateMutation = useMotivateLink(jobId, type, id, props);
 
@@ -62,41 +102,20 @@ function LinksResults({jobId, type, id, linksProps, filteredClusters}: {
 
     return (
         <>
-            <Results className={classes.results} distinctLines={false}>
-                {data.pages.map((page, pageNo) =>
-                    (page as Link[]).map((link, idx) =>
-                        <LinkResultItem key={`${pageNo}_${idx}`} link={link}
-                                        onValidate={validation => onValidate(link, validation)}
-                                        onMotivate={motivation => onMotivate(link, motivation)}/>))}
-            </Results>
-
-            <div ref={endOfTheListRef}>
-                {isLoading && <Spinner/>}
-            </div>
+            {page.map((link, idx) =>
+                <LinkResultItem key={`${pageNo}_${idx}`} link={link}
+                                onValidate={validation => onValidate(link, validation)}
+                                onMotivate={motivation => onMotivate(link, motivation)}/>)}
         </>
     );
 }
 
 function LinkResultItem({link, onValidate, onMotivate}: {
-    link: Link,
+    link: MinimalLink,
     onValidate: (validation: ValidationState) => void,
     onMotivate: (motivation: string) => void
 }) {
-    const className = (() => {
-        switch (link.valid) {
-            case 'accepted':
-                return classes.accepted;
-            case 'rejected':
-                return classes.rejected;
-            case 'uncertain':
-                return classes.uncertain;
-            case 'disputed':
-                return classes.disputed;
-            default:
-                return '';
-        }
-    })();
-
+    const className = getValidationClassName(link.valid);
     const switchSides = link.link_order === 'target_source';
     const sourceValues = switchSides ? link.target_values : link.source_values;
     const targetValues = switchSides ? link.source_values : link.target_values;
